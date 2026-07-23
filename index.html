@@ -172,6 +172,41 @@
         <a class="btn btn-white" data-whatsapp href="#">Escribir por WhatsApp</a>
       </div>
     </section>
+
+    <section id="galeria" class="section gallery-section" aria-labelledby="galleryTitle">
+      <div class="container">
+        <div class="section-heading gallery-heading reveal">
+          <div>
+            <span class="eyebrow">Conoce MOBEL</span>
+            <h2 id="galleryTitle">Productos, promociones y novedades</h2>
+          </div>
+          <p>Desliza para conocer más de lo que tenemos para ti.</p>
+        </div>
+
+        <div class="mobel-carousel reveal" data-carousel>
+          <button class="carousel-arrow carousel-prev" type="button" aria-label="Ver imagen anterior">
+            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+          </button>
+
+          <div class="carousel-viewport" tabindex="0">
+            <div class="carousel-track">
+              <figure class="carousel-slide"><img src="img/galeria/mobel-01.jpg" alt="Trapeadores de microfibra MOBEL en colores amarillo, azul y verde" loading="lazy"></figure>
+              <figure class="carousel-slide"><img src="img/galeria/mobel-02.jpg" alt="Cubeta azul con exprimidor disponible en MOBEL" loading="lazy"></figure>
+              <figure class="carousel-slide"><img src="img/galeria/mobel-03.jpg" alt="Horario de atención de la tienda MOBEL" loading="lazy"></figure>
+              <figure class="carousel-slide"><img src="img/galeria/mobel-04.jpg" alt="Exhibición de escobas de distintos colores en la tienda MOBEL" loading="lazy"></figure>
+              <figure class="carousel-slide"><img src="img/galeria/mobel-05.jpg" alt="Kit básico de limpieza MOBEL" loading="lazy"></figure>
+              <figure class="carousel-slide"><img src="img/galeria/mobel-06.jpg" alt="Lavatrastes líquido MOBEL en cocina" loading="lazy"></figure>
+            </div>
+          </div>
+
+          <button class="carousel-arrow carousel-next" type="button" aria-label="Ver siguiente imagen">
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          </button>
+
+          <div class="carousel-dots" aria-label="Seleccionar imagen"></div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer>
@@ -202,6 +237,87 @@
   </div>
 
   <a class="floating-whatsapp" data-whatsapp href="#" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+
+
+  <script>
+    (() => {
+      const carousel = document.querySelector('[data-carousel]');
+      if (!carousel) return;
+
+      const viewport = carousel.querySelector('.carousel-viewport');
+      const slides = [...carousel.querySelectorAll('.carousel-slide')];
+      const prev = carousel.querySelector('.carousel-prev');
+      const next = carousel.querySelector('.carousel-next');
+      const dotsWrap = carousel.querySelector('.carousel-dots');
+      let activeIndex = 0;
+      let autoplayId;
+
+      const slideStep = () => {
+        if (slides.length < 2) return viewport.clientWidth;
+        return slides[1].offsetLeft - slides[0].offsetLeft;
+      };
+
+      const dots = slides.map((_, index) => {
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'carousel-dot';
+        dot.setAttribute('aria-label', `Ver imagen ${index + 1}`);
+        dot.addEventListener('click', () => goTo(index));
+        dotsWrap.appendChild(dot);
+        return dot;
+      });
+
+      function updateDots(index) {
+        activeIndex = index;
+        dots.forEach((dot, i) => {
+          dot.classList.toggle('is-active', i === index);
+          dot.setAttribute('aria-current', i === index ? 'true' : 'false');
+        });
+      }
+
+      function goTo(index, behavior = 'smooth') {
+        const normalized = (index + slides.length) % slides.length;
+        viewport.scrollTo({ left: slides[normalized].offsetLeft, behavior });
+        updateDots(normalized);
+      }
+
+      function move(direction) {
+        goTo(activeIndex + direction);
+      }
+
+      prev.addEventListener('click', () => move(-1));
+      next.addEventListener('click', () => move(1));
+
+      let scrollTimer;
+      viewport.addEventListener('scroll', () => {
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(() => {
+          const step = slideStep();
+          const index = Math.max(0, Math.min(slides.length - 1, Math.round(viewport.scrollLeft / step)));
+          updateDots(index);
+        }, 80);
+      }, { passive: true });
+
+      function startAutoplay() {
+        stopAutoplay();
+        autoplayId = setInterval(() => move(1), 4500);
+      }
+
+      function stopAutoplay() {
+        if (autoplayId) clearInterval(autoplayId);
+      }
+
+      carousel.addEventListener('mouseenter', stopAutoplay);
+      carousel.addEventListener('mouseleave', startAutoplay);
+      carousel.addEventListener('focusin', stopAutoplay);
+      carousel.addEventListener('focusout', startAutoplay);
+      carousel.addEventListener('touchstart', stopAutoplay, { passive: true });
+      carousel.addEventListener('touchend', startAutoplay, { passive: true });
+
+      updateDots(0);
+      startAutoplay();
+    })();
+  </script>
 
   <script src="config.js"></script>
   <script src="app.js"></script>
