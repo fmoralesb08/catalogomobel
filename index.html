@@ -9,6 +9,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+  />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -104,7 +108,7 @@
           <div class="store-actions">
             <a
               class="btn btn-primary"
-              href="https://maps.app.goo.gl/CttVsriPTwLATNa97"
+              href="https://maps.app.goo.gl/EVPxDoQPfivCT9Ai9"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -156,6 +160,25 @@
         <p id="emptyState" class="empty-state" hidden>No encontramos productos con esa búsqueda.</p>
       </div>
     </section>
+
+    <section id="beneficios" class="section benefits-section">
+      <div class="container benefits-layout">
+        <div class="benefits-copy reveal">
+          <span class="eyebrow">¿Por qué elegir MOBEL?</span>
+          <h2>Una compra más práctica para tu negocio</h2>
+          <p>Te ayudamos a encontrar las opciones adecuadas según tus necesidades, consumo y presupuesto.</p>
+          <a class="text-link" data-whatsapp href="#">Hablar con un asesor <span>→</span></a>
+        </div>
+
+        <div class="benefits-grid reveal">
+          <article><span>01</span><strong>Amplio catálogo</strong><p>Soluciones para limpieza, higiene y mantenimiento.</p></article>
+          <article><span>02</span><strong>Precios competitivos</strong><p>Alternativas para mayoreo y menudeo.</p></article>
+          <article><span>03</span><strong>Atención cercana</strong><p>Asesoría rápida y personalizada por WhatsApp.</p></article>
+          <article><span>04</span><strong>Entrega local</strong><p>Cobertura en Culiacán y zonas disponibles.</p></article>
+        </div>
+      </div>
+    </section>
+
     <section id="contacto" class="section contact-section">
       <div class="container contact-card reveal">
         <div>
@@ -184,20 +207,49 @@
         <strong>Contacto</strong>
         <p>Culiacán, Sinaloa, México</p>
         <a data-whatsapp href="#">WhatsApp</a>
+        <a
+          href="https://www.instagram.com/mobel.cln/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <i class="fa-brands fa-instagram"></i> Instagram
+        </a>
+        <a
+          href="https://www.facebook.com/mobel.cln/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <i class="fa-brands fa-facebook-f"></i> Facebook
+        </a>
       </div>
     </div>
     <div class="container footer-bottom">© <span id="year"></span> MOBEL. Todos los derechos reservados.</div>
   </footer>
 
-  <a class="floating-whatsapp" data-whatsapp href="#" aria-label="WhatsApp"><span>WA</span></a>
-<footer>
-...
-</footer>
+  <div class="social-float">
+    <a
+      href="https://www.instagram.com/mobel.cln/"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="social-btn instagram"
+      aria-label="Instagram"
+    >
+      <i class="fa-brands fa-instagram"></i>
+    </a>
 
-<script src="config.js"></script>
-<script src="app.js"></script>
-</body>
-</html>
+    <a
+      href="https://www.facebook.com/mobel.cln/"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="social-btn facebook"
+      aria-label="Facebook"
+    >
+      <i class="fa-brands fa-facebook-f"></i>
+    </a>
+  </div>
+
+  <a class="floating-whatsapp" data-whatsapp href="#" aria-label="WhatsApp"><span>WA</span></a>
+
   <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
