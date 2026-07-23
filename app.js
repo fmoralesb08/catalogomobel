@@ -44,7 +44,17 @@ function normalizeProduct(product) {
 
 async function loadProducts() {
   const grid = document.getElementById("productsGrid");
-  grid.innerHTML = '<p class="empty-state">Cargando productos...</p>';
+  grid.innerHTML = Array.from({ length: HOME_PRODUCT_LIMIT }, () => `
+    <article class="product-card product-skeleton" aria-hidden="true">
+      <div class="skeleton-image"></div>
+      <div class="product-content">
+        <div class="skeleton-line skeleton-small"></div>
+        <div class="skeleton-line skeleton-title"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line skeleton-button"></div>
+      </div>
+    </article>
+  `).join("");
 
   try {
     const response = await fetch(`${MOBEL_CONFIG.apiUrl}/productos`);
@@ -196,7 +206,7 @@ function renderProducts() {
     card.innerHTML = `
       <a class="product-image" href="${detailUrl}" aria-label="Ver ${escapeHtml(product.nombre)}">
         ${product.imagen
-          ? `<img src="${escapeHtml(product.imagen)}" alt="${escapeHtml(product.nombre)}" loading="lazy" />`
+          ? `<img src="${escapeHtml(product.imagen)}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" />`
           : `<div class="image-placeholder" aria-hidden="true">🧴</div>`}
       </a>
       <div class="product-content">
