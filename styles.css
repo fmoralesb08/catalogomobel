@@ -115,6 +115,12 @@ transform:scale(1.08)
 
 .store-section {
   background: #ffffff;
+  padding-bottom: 42px;
+}
+
+/* Reduce el espacio entre la tienda física y las categorías principales. */
+.categories-section {
+  padding-top: 42px;
 }
 
 .store-card {
@@ -182,6 +188,14 @@ transform:scale(1.08)
 }
 
 @media (max-width: 850px) {
+  .store-section {
+    padding-bottom: 32px;
+  }
+
+  .categories-section {
+    padding-top: 32px;
+  }
+
   .store-card {
     grid-template-columns: 1fr;
     gap: 28px;
