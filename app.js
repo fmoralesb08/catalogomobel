@@ -92,9 +92,12 @@ function renderCategories(products) {
   const categories = (chosen.length ? chosen : available).slice(0, 8);
 
   holder.innerHTML = categories.map(category => `
-    <a class="category-card reveal" href="catalogo.html?categoria=${encodeURIComponent(category)}">
+    <a class="category-card reveal" href="catalogo.html?categoria=${encodeURIComponent(category)}" aria-label="Ver productos de ${escapeHtml(category)}">
       <img src="${escapeHtml(categoryImage(category))}" alt="${escapeHtml(category)}" loading="lazy" decoding="async">
-      <div><h3>${escapeHtml(category)}</h3><span>Ver productos <i class="fa-solid fa-arrow-right"></i></span></div>
+      <div class="category-card-content">
+        <h3>${escapeHtml(category)}</h3>
+        <span>Ver productos <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+      </div>
     </a>
   `).join("");
 
