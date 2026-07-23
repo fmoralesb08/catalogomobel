@@ -155,9 +155,14 @@ async function loadCatalog() {
     const data = await response.json();
     allProducts = (data.productos || []).map(normalizeProduct).filter(product => product.id && product.nombre);
 
-    const requestedCategory = new URLSearchParams(location.search).get("categoria");
+    const queryParams = new URLSearchParams(location.search);
+    const requestedCategory = queryParams.get("categoria");
+    const requestedSearch = queryParams.get("buscar");
     if (requestedCategory && allProducts.some(product => product.categoria === requestedCategory)) {
       activeCategory = requestedCategory;
+    }
+    if (requestedSearch) {
+      document.getElementById("catalogSearch").value = requestedSearch;
     }
 
     renderFilters();

@@ -237,6 +237,30 @@ async function loadHomeProducts() {
   }
 }
 
+
+function setupUseCategoriesCarousel() {
+  const track = document.getElementById("useCategoriesTrack");
+  const previous = document.querySelector(".use-carousel-prev");
+  const next = document.querySelector(".use-carousel-next");
+  if (!track || !previous || !next) return;
+
+  const updateButtons = () => {
+    const maxScroll = track.scrollWidth - track.clientWidth;
+    previous.disabled = track.scrollLeft <= 4;
+    next.disabled = track.scrollLeft >= maxScroll - 4;
+  };
+
+  const move = direction => {
+    track.scrollBy({ left: direction * Math.max(track.clientWidth * 0.65, 280), behavior: "smooth" });
+  };
+
+  previous.addEventListener("click", () => move(-1));
+  next.addEventListener("click", () => move(1));
+  track.addEventListener("scroll", updateButtons, { passive: true });
+  window.addEventListener("resize", updateButtons);
+  requestAnimationFrame(updateButtons);
+}
+
 function setupMenu() {
   const toggle = document.getElementById("menuToggle");
   const nav = document.getElementById("mainNav");
@@ -252,4 +276,5 @@ document.getElementById("year").textContent = new Date().getFullYear();
 setupScrollAnimations();
 setupMenu();
 setupWhatsApp();
+setupUseCategoriesCarousel();
 loadHomeProducts();
