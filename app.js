@@ -18,6 +18,14 @@ function escapeHtml(value = "") {
   })[character]);
 }
 
+function normalizeText(value = "") {
+  return String(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
 function normalizeProduct(product) {
   return {
     id: product.id,
@@ -89,6 +97,7 @@ function renderCategories() {
   `).join("");
 
   holder.querySelectorAll(".category-card").forEach(card => {
+    observeReveal(card);
     card.addEventListener("click", () => {
       activeCategory = card.dataset.category;
       render();
@@ -115,10 +124,10 @@ function renderFilters() {
 }
 
 function renderProducts() {
-  const query = document.getElementById("searchInput").value.trim().toLowerCase();
+  const query = normalizeText(document.getElementById("searchInput").value);
   const filtered = allProducts.filter(product => {
     const categoryMatch = activeCategory === "Todos" || product.categoria === activeCategory;
-    const text = `${product.nombre} ${product.sku} ${product.categoria} ${product.descripcion}`.toLowerCase();
+    const text = normalizeText(`${product.nombre} ${product.sku} ${product.categoria} ${product.descripcion}`);
     return categoryMatch && text.includes(query);
   });
 
@@ -127,6 +136,14 @@ function renderProducts() {
   grid.innerHTML = "";
   empty.hidden = filtered.length > 0;
 
+  const resultCount = document.getElementById("searchResultsCount");
+  if (resultCount) {
+    const queryLabel = document.getElementById("searchInput").value.trim();
+    resultCount.textContent = queryLabel
+      ? `${filtered.length} resultado${filtered.length === 1 ? "" : "s"} para “${queryLabel}”`
+      : `${filtered.length} producto${filtered.length === 1 ? "" : "s"} disponible${filtered.length === 1 ? "" : "s"}`;
+  }
+
   filtered.forEach((product, index) => {
     const message = `Hola, me interesa el producto: ${product.nombre}${product.sku ? ` (SKU: ${product.sku})` : ""}. ¿Me pueden dar información?`;
     const whatsappUrl = `https://wa.me/${MOBEL_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
@@ -134,7 +151,7 @@ function renderProducts() {
     const description = product.descripcion || (product.unidad ? `Presentación: ${product.unidad}` : "Solicita información y disponibilidad.");
 
     const card = document.createElement("article");
-    card.className = "product-card reveal";
+    card.className = "product-card reveal search-enter";
     card.style.animationDelay = `${Math.min(index, 20) * 35}ms`;
     card.innerHTML = `
       <a class="product-image" href="${detailUrl}" aria-label="Ver ${escapeHtml(product.nombre)}">
@@ -149,7 +166,43 @@ function renderProducts() {
         <a class="btn btn-primary" href="${whatsappUrl}" target="_blank" rel="noopener">Solicitar información</a>
       </div>`;
     grid.appendChild(card);
+    observeReveal(card);
   });
+}
+
+
+let revealObserver;
+
+function setupScrollAnimations() {
+  const elements = document.querySelectorAll(".reveal");
+
+  if (!("IntersectionObserver" in window)) {
+    elements.forEach(element => element.classList.add("in-view"));
+    return;
+  }
+
+  revealObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("in-view");
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.12,
+    rootMargin: "0px 0px -45px 0px"
+  });
+
+  elements.forEach(observeReveal);
+}
+
+function observeReveal(element) {
+  if (!element) return;
+  if (revealObserver) {
+    revealObserver.observe(element);
+  } else {
+    element.classList.add("in-view");
+  }
 }
 
 function render() {
@@ -166,5 +219,6 @@ document.getElementById("menuToggle").addEventListener("click", () => {
 });
 document.querySelectorAll("#mainNav a").forEach(link => link.addEventListener("click", () => document.getElementById("mainNav").classList.remove("open")));
 
+setupScrollAnimations();
 setupWhatsApp();
 loadProducts();

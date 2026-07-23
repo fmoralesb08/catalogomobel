@@ -69,7 +69,10 @@ transition:.2s
 background:#1ebe5d;
 transform:scale(1.08)
 }
-.reveal{animation:fadeUp .7s ease both}@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.reveal{opacity:1;transform:none}
+.js .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.js .reveal.in-view{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.js .reveal{opacity:1;transform:none;transition:none}}
 @media(max-width:980px){
   .nav-cta{display:none}.menu-toggle{display:block}nav{position:absolute;left:20px;right:20px;top:82px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg);padding:16px;display:none;flex-direction:column;align-items:stretch;gap:0}nav.open{display:flex}nav a{padding:12px}
   .hero-grid{grid-template-columns:1fr;gap:45px}.hero-image-wrap,.hero-image-wrap>img{min-height:440px;height:440px}.trust-grid{grid-template-columns:repeat(2,1fr);row-gap:20px}.trust-grid>div:nth-child(2){border-right:0}.categories-grid,.products-grid{grid-template-columns:repeat(2,1fr)}.section-heading{align-items:flex-start;flex-direction:column;gap:18px}.section-heading p{max-width:650px}.catalog-toolbar{align-items:stretch;flex-direction:column}.filters{justify-content:flex-start}.contact-card{align-items:flex-start;flex-direction:column}.footer-grid{grid-template-columns:1fr 1fr}
@@ -335,4 +338,25 @@ transform:scale(1.08)
 @media (prefers-reduced-motion: reduce) {
   .carousel-viewport { scroll-behavior: auto; }
   .carousel-slide img, .carousel-arrow, .carousel-dot { transition: none; }
+}
+
+
+.search-results-count{
+  width:100%;
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:.86rem;
+  font-weight:700;
+}
+.search-box:focus-within{
+  border-color:rgba(6,56,111,.42);
+  box-shadow:0 0 0 4px rgba(6,56,111,.08);
+}
+.search-box input::-webkit-search-cancel-button{cursor:pointer}
+.product-card.search-enter{
+  animation:searchEnter .32s ease both;
+}
+@keyframes searchEnter{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:none}
 }
