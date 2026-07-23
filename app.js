@@ -11,6 +11,8 @@ const categoryData = [
 
 let allProducts = [];
 let activeCategory = "Todos";
+let showAllProducts = false;
+const HOME_PRODUCT_LIMIT = 8;
 
 function escapeHtml(value = "") {
   return String(value).replace(/[&<>'"]/g, character => ({
@@ -60,6 +62,24 @@ async function loadProducts() {
     console.error("No fue posible cargar los productos:", error);
     grid.innerHTML = '<p class="empty-state">No fue posible cargar el catálogo. Intenta nuevamente en unos minutos.</p>';
   }
+}
+
+
+function setupCatalogToggle() {
+  const button = document.getElementById("toggleCatalogBtn");
+  if (!button) return;
+
+  button.addEventListener("click", () => {
+    showAllProducts = !showAllProducts;
+    renderProducts();
+
+    if (!showAllProducts) {
+      document.getElementById("productos")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+  });
 }
 
 function setupWhatsApp() {
@@ -131,20 +151,40 @@ function renderProducts() {
     return categoryMatch && text.includes(query);
   });
 
+  const isDefaultView = !query && activeCategory === "Todos";
+  const visibleProducts = isDefaultView && !showAllProducts
+    ? filtered.slice(0, HOME_PRODUCT_LIMIT)
+    : filtered;
+
   const grid = document.getElementById("productsGrid");
   const empty = document.getElementById("emptyState");
   grid.innerHTML = "";
-  empty.hidden = filtered.length > 0;
+  empty.hidden = visibleProducts.length > 0;
 
   const resultCount = document.getElementById("searchResultsCount");
   if (resultCount) {
     const queryLabel = document.getElementById("searchInput").value.trim();
-    resultCount.textContent = queryLabel
-      ? `${filtered.length} resultado${filtered.length === 1 ? "" : "s"} para “${queryLabel}”`
-      : `${filtered.length} producto${filtered.length === 1 ? "" : "s"} disponible${filtered.length === 1 ? "" : "s"}`;
+
+    if (queryLabel) {
+      resultCount.textContent = `${filtered.length} resultado${filtered.length === 1 ? "" : "s"} para “${queryLabel}”`;
+    } else if (activeCategory !== "Todos") {
+      resultCount.textContent = `${filtered.length} producto${filtered.length === 1 ? "" : "s"} en ${activeCategory}`;
+    } else if (!showAllProducts) {
+      resultCount.textContent = `Mostrando ${visibleProducts.length} productos destacados`;
+    } else {
+      resultCount.textContent = `${filtered.length} productos disponibles`;
+    }
   }
 
-  filtered.forEach((product, index) => {
+  const toggleButton = document.getElementById("toggleCatalogBtn");
+  if (toggleButton) {
+    toggleButton.hidden = !isDefaultView || filtered.length <= HOME_PRODUCT_LIMIT;
+    toggleButton.innerHTML = showAllProducts
+      ? 'Mostrar menos <i class="fa-solid fa-arrow-up"></i>'
+      : 'Ver todos los productos <i class="fa-solid fa-arrow-down"></i>';
+  }
+
+  visibleProducts.forEach((product, index) => {
     const message = `Hola, me interesa el producto: ${product.nombre}${product.sku ? ` (SKU: ${product.sku})` : ""}. ¿Me pueden dar información?`;
     const whatsappUrl = `https://wa.me/${MOBEL_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
     const detailUrl = `producto.html?id=${encodeURIComponent(product.id)}`;
@@ -157,52 +197,27 @@ function renderProducts() {
       <a class="product-image" href="${detailUrl}" aria-label="Ver ${escapeHtml(product.nombre)}">
         ${product.imagen
           ? `<img src="${escapeHtml(product.imagen)}" alt="${escapeHtml(product.nombre)}" loading="lazy" />`
-          : '<div class="image-placeholder">🧴</div>'}
+          : `<div class="image-placeholder" aria-hidden="true">🧴</div>`}
       </a>
       <div class="product-content">
-        <span class="product-category">${escapeHtml(product.categoria)}</span>
+        <div class="product-meta">
+          <span>${escapeHtml(product.categoria || "Producto")}</span>
+          ${product.sku ? `<small>SKU ${escapeHtml(product.sku)}</small>` : ""}
+        </div>
         <h3><a href="${detailUrl}">${escapeHtml(product.nombre)}</a></h3>
         <p>${escapeHtml(description)}</p>
-        <a class="btn btn-primary" href="${whatsappUrl}" target="_blank" rel="noopener">Solicitar información</a>
-      </div>`;
+        <div class="product-actions">
+          <a class="btn btn-secondary" href="${detailUrl}">Ver producto</a>
+          <a class="icon-btn" href="${whatsappUrl}" target="_blank" rel="noopener" aria-label="Consultar ${escapeHtml(product.nombre)} por WhatsApp">
+            <i class="fa-brands fa-whatsapp"></i>
+          </a>
+        </div>
+      </div>
+    `;
+
     grid.appendChild(card);
     observeReveal(card);
   });
-}
-
-
-let revealObserver;
-
-function setupScrollAnimations() {
-  const elements = document.querySelectorAll(".reveal");
-
-  if (!("IntersectionObserver" in window)) {
-    elements.forEach(element => element.classList.add("in-view"));
-    return;
-  }
-
-  revealObserver = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("in-view");
-        revealObserver.unobserve(entry.target);
-      }
-    });
-  }, {
-    threshold: 0.12,
-    rootMargin: "0px 0px -45px 0px"
-  });
-
-  elements.forEach(observeReveal);
-}
-
-function observeReveal(element) {
-  if (!element) return;
-  if (revealObserver) {
-    revealObserver.observe(element);
-  } else {
-    element.classList.add("in-view");
-  }
 }
 
 function render() {
@@ -220,5 +235,6 @@ document.getElementById("menuToggle").addEventListener("click", () => {
 document.querySelectorAll("#mainNav a").forEach(link => link.addEventListener("click", () => document.getElementById("mainNav").classList.remove("open")));
 
 setupScrollAnimations();
+setupCatalogToggle();
 setupWhatsApp();
 loadProducts();

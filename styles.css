@@ -360,3 +360,23 @@ transform:scale(1.08)
   from{opacity:0;transform:translateY(10px)}
   to{opacity:1;transform:none}
 }
+
+
+.catalog-actions{
+  display:flex;
+  justify-content:center;
+  margin-top:34px;
+}
+.catalog-toggle{
+  min-width:230px;
+  gap:10px;
+}
+.catalog-toggle i{
+  transition:transform .2s ease;
+}
+.catalog-toggle:hover i{
+  transform:translateY(2px);
+}
+.catalog-toggle[hidden]{
+  display:none;
+}
