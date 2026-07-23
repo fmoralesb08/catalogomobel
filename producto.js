@@ -4,6 +4,20 @@ function escapeHtml(value = "") {
   })[character]);
 }
 
+
+function getPrice(product) {
+  const raw = product.precio ?? product.price ?? product.precioVenta ?? product.precio_venta ?? product.venta ?? product.public_price;
+  if (raw === null || raw === undefined || raw === "") return null;
+  const value = Number(String(raw).replace(/[^0-9.-]/g, ""));
+  return Number.isFinite(value) ? value : null;
+}
+
+function formatPrice(value) {
+  return value === null
+    ? "Cotizar"
+    : new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(value);
+}
+
 async function loadProduct() {
   const holder = document.getElementById("productDetail");
   const id = new URLSearchParams(window.location.search).get("id");
@@ -22,7 +36,7 @@ async function loadProduct() {
     const product = data.producto;
     document.title = `${product.nombre} | MOBEL`;
 
-    const message = `Hola, me interesa el producto: ${product.nombre}${product.sku ? ` (SKU: ${product.sku})` : ""}. ¿Me pueden dar información?`;
+    const message = `Hola, me interesa el producto: ${product.nombre}. ¿Me pueden dar información?`;
     const whatsappUrl = `https://wa.me/${MOBEL_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
     document.getElementById("headerWhatsapp").href = whatsappUrl;
 
@@ -35,7 +49,7 @@ async function loadProduct() {
       <div class="product-detail-content">
         <span class="product-category">${escapeHtml(product.categoria || "Producto")}</span>
         <h1>${escapeHtml(product.nombre)}</h1>
-        ${product.sku ? `<p class="product-meta"><strong>SKU:</strong> ${escapeHtml(product.sku)}</p>` : ""}
+        <div class="product-detail-price${getPrice(product) === null ? " product-price-quote" : ""}">${formatPrice(getPrice(product))}</div>
         ${product.unidad ? `<p class="product-meta"><strong>Unidad:</strong> ${escapeHtml(product.unidad)}</p>` : ""}
         <p>${escapeHtml(product.descripcion || "Solicita información, presentación y disponibilidad por WhatsApp.")}</p>
         <a class="btn btn-primary" href="${whatsappUrl}" target="_blank" rel="noopener">Solicitar información</a>

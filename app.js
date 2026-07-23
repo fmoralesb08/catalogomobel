@@ -18,15 +18,29 @@ function escapeHtml(value = "") {
   })[character]);
 }
 
+
+function getPrice(product) {
+  const raw = product.precio ?? product.price ?? product.precioVenta ?? product.precio_venta ?? product.venta ?? product.public_price;
+  if (raw === null || raw === undefined || raw === "") return null;
+  const value = Number(String(raw).replace(/[^0-9.-]/g, ""));
+  return Number.isFinite(value) ? value : null;
+}
+
+function formatPrice(value) {
+  return value === null
+    ? "Cotizar"
+    : new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(value);
+}
+
 function normalizeProduct(product) {
   return {
     id: product.id,
-    sku: product.sku || "",
     nombre: product.nombre || "Producto",
     categoria: product.categoria || "Otros",
     descripcion: product.descripcion || "",
     imagen: product.imagen || "",
-    unidad: product.unidad || ""
+    unidad: product.unidad || "",
+    precio: getPrice(product)
   };
 }
 
@@ -114,7 +128,7 @@ function renderFeatured(products) {
 
   featured.forEach((product, index) => {
     const detailUrl = `producto.html?id=${encodeURIComponent(product.id)}`;
-    const message = `Hola, me interesa el producto: ${product.nombre}${product.sku ? ` (SKU: ${product.sku})` : ""}. ¿Me pueden dar información?`;
+    const message = `Hola, me interesa el producto: ${product.nombre}. ¿Me pueden dar información?`;
     const whatsappUrl = `https://wa.me/${MOBEL_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
     const description = product.descripcion || (product.unidad ? `Presentación: ${product.unidad}` : "Solicita información y disponibilidad.");
 
@@ -129,9 +143,9 @@ function renderFeatured(products) {
       <div class="product-content">
         <div class="product-meta">
           <span>${escapeHtml(product.categoria)}</span>
-          ${product.sku ? `<small>SKU ${escapeHtml(product.sku)}</small>` : ""}
         </div>
         <h3><a href="${detailUrl}">${escapeHtml(product.nombre)}</a></h3>
+        <div class="product-price${product.precio === null ? " product-price-quote" : ""}">${formatPrice(product.precio)}</div>
         <p>${escapeHtml(description)}</p>
         <div class="product-actions">
           <a class="btn btn-secondary" href="${detailUrl}">Ver producto</a>

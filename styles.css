@@ -398,3 +398,26 @@ transform:scale(1.08)
 @keyframes skeletonShimmer{to{transform:translateX(100%)}}
 @media(max-width:700px){.catalog-hero{padding:48px 0 34px}.catalog-page-toolbar .search-box{width:100%}}
 @media(prefers-reduced-motion:reduce){.skeleton-image::after,.skeleton-line::after{animation:none}}
+
+
+.product-price{
+  margin-top:-2px;
+  color:var(--navy);
+  font-size:1.28rem;
+  line-height:1.1;
+  font-weight:800;
+  letter-spacing:-.02em;
+}
+.product-price-quote{
+  font-size:1rem;
+  color:var(--green);
+  letter-spacing:0;
+}
+.product-detail-price{
+  margin:8px 0 18px;
+  color:var(--navy);
+  font-size:clamp(1.7rem,3vw,2.35rem);
+  line-height:1;
+  font-weight:800;
+  letter-spacing:-.035em;
+}
