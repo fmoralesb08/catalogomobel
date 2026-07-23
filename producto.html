@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#06386f" />
+  <title>Producto | MOBEL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="topbar">Mayoreo y menudeo · Entregas en Culiacán · Atención personalizada</div>
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="index.html" aria-label="MOBEL">
+        <img src="img/logo-mobel.png" alt="MOBEL Productos de Limpieza" class="brand-logo">
+      </a>
+      <nav><a href="index.html#productos">Volver al catálogo</a></nav>
+      <a class="btn btn-primary nav-cta" id="headerWhatsapp" href="#">Cotizar por WhatsApp</a>
+    </div>
+  </header>
+
+  <main class="section">
+    <div class="container">
+      <p><a class="text-link" href="index.html#productos">← Volver a productos</a></p>
+      <section id="productDetail" class="product-detail">
+        <p class="empty-state">Cargando producto...</p>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container footer-bottom">© <span id="year"></span> MOBEL. Todos los derechos reservados.</div>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="producto.js"></script>
+</body>
+</html>

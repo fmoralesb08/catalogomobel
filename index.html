@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="MOBEL: productos de limpieza, jarcería y consumibles para empresas, comercios y hogar en Culiacán." />
+  <meta name="theme-color" content="#06386f" />
+  <title>MOBEL | Productos de limpieza</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="topbar">Mayoreo y menudeo · Entregas en Culiacán · Atención personalizada</div>
+
+  <header class="site-header" id="inicio">
+    <div class="container nav">
+      <a class="brand" href="#inicio" aria-label="MOBEL">
+        <img src="img/logo-mobel.png" alt="MOBEL Productos de Limpieza" class="brand-logo">
+      </a>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+   <nav id="mainNav">
+  <a href="#categorias">Categorías</a>
+  <a href="#productos">Productos</a>
+  <a href="#tienda">Tienda física</a>
+  <a href="#beneficios">Nosotros</a>
+  <a href="#contacto">Contacto</a>
+</nav>
+      <a class="btn btn-primary nav-cta" data-whatsapp href="#">Cotizar por WhatsApp</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-bg" aria-hidden="true"></div>
+      <div class="container hero-grid">
+        <div class="hero-copy reveal">
+          <span class="eyebrow">Soluciones para cada espacio</span>
+          <h1>Todo para la limpieza de tu negocio.</h1>
+          <p>Productos confiables para empresas, comercios y hogar. Encuentra líquidos, jarcería, higiénicos, bolsas, dispensadores y mucho más.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" data-whatsapp href="#">Solicitar cotización</a>
+            <a class="btn btn-secondary" href="#categorias">Explorar categorías</a>
+          </div>
+          <div class="hero-proof">
+            <div><strong>8</strong><span>Categorías</span></div>
+            <div><strong id="productCount">+100</strong><span>Productos</span></div>
+            <div><strong>Local</strong><span>Atención en Culiacán</span></div>
+          </div>
+        </div>
+
+        <div class="hero-media reveal">
+          <div class="hero-image-wrap">
+            <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1400&q=88" alt="Productos y equipo profesional de limpieza" />
+            <div class="hero-badge">
+              <span class="badge-icon">✓</span>
+              <div><strong>Atención personalizada</strong><small>Te ayudamos a elegir lo ideal</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="trust-strip">
+      <div class="container trust-grid">
+        <div><span>🚚</span><strong>Entregas locales</strong><small>Consulta cobertura</small></div>
+        <div><span>📦</span><strong>Mayoreo y menudeo</strong><small>Opciones para cada compra</small></div>
+        <div><span>🧾</span><strong>Facturación</strong><small>Para tu negocio</small></div>
+        <div><span>💬</span><strong>Cotización rápida</strong><small>Directo por WhatsApp</small></div>
+      </div>
+    </section>
+    <section id="tienda" class="section store-section">
+      <div class="container store-card reveal">
+
+        <div class="store-image">
+          <img
+            src="img/tienda-mobel.webp"
+            alt="Tienda física MOBEL en La Conquista, Culiacán"
+          />
+        </div>
+
+        <div class="store-info">
+          <span class="eyebrow">También tenemos tienda física</span>
+
+          <h2>Visítanos en MOBEL</h2>
+
+          <p>
+            Encuentra productos de limpieza para hogar, negocio y mayoreo.
+            Conoce nuestros productos y recibe atención personalizada.
+          </p>
+
+          <div class="store-address">
+            <strong>Dirección</strong>
+            <p>
+              Blvd. Conquistadores 1890, Local 6<br>
+              La Conquista, Culiacán, Sinaloa.
+            </p>
+          </div>
+
+          <div class="store-actions">
+            <a
+              class="btn btn-primary"
+              href="https://maps.app.goo.gl/CttVsriPTwLATNa97"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Cómo llegar
+            </a>
+
+            <a class="btn btn-secondary" data-whatsapp href="#">
+              Enviar WhatsApp
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+    <section id="categorias" class="section categories-section">
+      <div class="container">
+        <div class="section-heading reveal">
+          <div>
+            <span class="eyebrow">Explora nuestro catálogo</span>
+            <h2>Todo lo que necesitas, en un solo lugar</h2>
+          </div>
+          <p>Selecciona una categoría para ver los productos disponibles.</p>
+        </div>
+
+        <div class="categories-grid" id="categoriesGrid"></div>
+        <p class="stock-note">Imágenes provisionales de stock. Después podrás reemplazarlas por fotografías reales sin modificar el diseño.</p>
+      </div>
+    </section>
+
+    <section id="productos" class="section products-section">
+      <div class="container">
+        <div class="section-heading reveal">
+          <div>
+            <span class="eyebrow">Productos destacados</span>
+            <h2>Encuentra justo lo que buscas</h2>
+          </div>
+          <p>Usa el buscador o filtra por categoría. El catálogo se actualiza automáticamente desde nuestro inventario.</p>
+        </div>
+
+        <div class="catalog-toolbar reveal">
+          <label class="search-box">
+            <span>⌕</span>
+            <input id="searchInput" type="search" placeholder="Buscar producto..." aria-label="Buscar producto" />
+          </label>
+          <div id="categoryFilters" class="filters"></div>
+        </div>
+
+        <div id="productsGrid" class="products-grid"></div>
+        <p id="emptyState" class="empty-state" hidden>No encontramos productos con esa búsqueda.</p>
+      </div>
+    </section>
+
+    <section id="beneficios" class="section benefits-section">
+      <div class="container benefits-layout">
+        <div class="benefits-copy reveal">
+          <span class="eyebrow">¿Por qué elegir MOBEL?</span>
+          <h2>Una compra más práctica para tu negocio</h2>
+          <p>Te ayudamos a encontrar las opciones adecuadas según tus necesidades, consumo y presupuesto.</p>
+          <a class="text-link" data-whatsapp href="#">Hablar con un asesor <span>→</span></a>
+        </div>
+
+        <div class="benefits-grid reveal">
+          <article><span>01</span><strong>Amplio catálogo</strong><p>Soluciones para limpieza, higiene y mantenimiento.</p></article>
+          <article><span>02</span><strong>Precios competitivos</strong><p>Alternativas para mayoreo y menudeo.</p></article>
+          <article><span>03</span><strong>Atención cercana</strong><p>Asesoría rápida y personalizada por WhatsApp.</p></article>
+          <article><span>04</span><strong>Entrega local</strong><p>Cobertura en Culiacán y zonas disponibles.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="contacto" class="section contact-section">
+      <div class="container contact-card reveal">
+        <div>
+          <span class="eyebrow light">Cotiza con nosotros</span>
+          <h2>¿Necesitas surtir tu negocio?</h2>
+          <p>Cuéntanos qué productos buscas y te ayudamos a preparar una cotización personalizada.</p>
+        </div>
+        <a class="btn btn-white" data-whatsapp href="#">Escribir por WhatsApp</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <img src="img/logo-mobel.png" alt="MOBEL" class="footer-logo">
+        <p>Productos de limpieza para empresas, comercios y hogar.</p>
+      </div>
+      <div>
+        <strong>Navegación</strong>
+        <a href="#categorias">Categorías</a>
+        <a href="#productos">Productos</a>
+        <a href="#beneficios">Nosotros</a>
+      </div>
+      <div>
+        <strong>Contacto</strong>
+        <p>Culiacán, Sinaloa, México</p>
+        <a data-whatsapp href="#">WhatsApp</a>
+      </div>
+    </div>
+    <div class="container footer-bottom">© <span id="year"></span> MOBEL. Todos los derechos reservados.</div>
+  </footer>
+
+  <a class="floating-whatsapp" data-whatsapp href="#" aria-label="WhatsApp"><span>WA</span></a>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
