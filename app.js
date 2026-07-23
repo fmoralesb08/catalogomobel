@@ -163,18 +163,68 @@ function renderFeatured(products) {
   });
 }
 
+async function getFeaturedProductIds() {
+  try {
+    const response = await fetch("featured-products.json", { cache: "no-cache" });
+    if (!response.ok) return [];
+    const data = await response.json();
+    if (!Array.isArray(data)) return [];
+
+    return data
+      .map(item => typeof item === "object" && item !== null ? item.id : item)
+      .map(Number)
+      .filter(Number.isInteger)
+      .slice(0, HOME_PRODUCT_LIMIT);
+  } catch (error) {
+    console.warn("No se pudo leer featured-products.json:", error);
+    return [];
+  }
+}
+
+async function fetchProductById(id) {
+  const response = await fetch(`${MOBEL_CONFIG.apiUrl}/productos/${encodeURIComponent(id)}`, {
+    headers: { Accept: "application/json" }
+  });
+  if (!response.ok) throw new Error(`Producto ${id}: error ${response.status}`);
+  const data = await response.json();
+  return normalizeProduct(data.producto || data);
+}
+
+async function fetchDefaultFeaturedProducts() {
+  const response = await fetch(`${MOBEL_CONFIG.apiUrl}/productos?limit=${HOME_PRODUCT_LIMIT}`, {
+    headers: { Accept: "application/json" }
+  });
+  if (!response.ok) throw new Error(`Error ${response.status}`);
+  const data = await response.json();
+  return {
+    total: data.total,
+    products: (data.productos || []).map(normalizeProduct).filter(product => product.id && product.nombre)
+  };
+}
+
 async function loadHomeProducts() {
   renderSkeletons();
   try {
-    const response = await fetch(`${MOBEL_CONFIG.apiUrl}/productos?limit=${HOME_PRODUCT_LIMIT}`, {
-      headers: { Accept: "application/json" }
-    });
-    if (!response.ok) throw new Error(`Error ${response.status}`);
-    const data = await response.json();
-    const products = (data.productos || []).map(normalizeProduct).filter(product => product.id && product.nombre);
+    const featuredIds = await getFeaturedProductIds();
+    let products = [];
+    let total = null;
+
+    if (featuredIds.length) {
+      const results = await Promise.allSettled(featuredIds.map(fetchProductById));
+      products = results
+        .filter(result => result.status === "fulfilled")
+        .map(result => result.value)
+        .filter(product => product.id && product.nombre);
+    }
+
+    if (!products.length) {
+      const fallback = await fetchDefaultFeaturedProducts();
+      products = fallback.products;
+      total = fallback.total;
+    }
 
     const count = document.getElementById("productCount");
-    if (count && data.total) count.textContent = `+${data.total}`;
+    if (count && total) count.textContent = `+${total}`;
 
     renderFeatured(products);
     setTimeout(() => renderCategories(categoryData.map(item => ({ categoria: item.nombre }))), 0);

@@ -1,0 +1,28 @@
+CÓMO ELEGIR LOS PRODUCTOS DESTACADOS DE LA PÁGINA DE INICIO
+
+1. Abre el catálogo completo en tu navegador.
+2. Entra al producto que deseas destacar.
+3. Copia el número que aparece al final de la dirección.
+
+Ejemplo:
+https://catalogomobel.com/producto.html?id=459
+
+El ID del producto es: 459
+
+4. Abre el archivo featured-products.json y coloca los IDs así:
+
+[
+  459,
+  312,
+  127,
+  580
+]
+
+Puedes colocar hasta 8 productos. El orden de los números será el mismo orden en que aparecerán en el inicio.
+
+5. Guarda el archivo y realiza Commit y Push origin en GitHub Desktop.
+
+IMPORTANTE:
+- No agregues comillas alrededor de los números.
+- Separa cada ID con una coma, excepto el último.
+- Si dejas el archivo vacío como [ ], el sitio mostrará automáticamente los primeros 8 productos disponibles.

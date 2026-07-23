@@ -30,3 +30,7 @@ MOBEL — CATÁLOGO WEB PROFESIONAL
    Cepillos y fibras
    Cestos y cubetas
    Higiénicos
+
+
+PRODUCTOS DESTACADOS
+Edita featured-products.json con hasta 8 IDs de Kordata. Consulta COMO_ELEGIR_PRODUCTOS_DESTACADOS.txt.
