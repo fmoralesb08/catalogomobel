@@ -265,11 +265,29 @@ function setupMenu() {
   const toggle = document.getElementById("menuToggle");
   const nav = document.getElementById("mainNav");
   if (!toggle || !nav) return;
-  toggle.addEventListener("click", () => {
-    nav.classList.toggle("open");
-    toggle.setAttribute("aria-expanded", String(nav.classList.contains("open")));
+
+  const closeMenu = () => {
+    nav.classList.remove("open");
+    toggle.setAttribute("aria-expanded", "false");
+  };
+
+  toggle.addEventListener("click", event => {
+    event.stopPropagation();
+    const willOpen = !nav.classList.contains("open");
+    nav.classList.toggle("open", willOpen);
+    toggle.setAttribute("aria-expanded", String(willOpen));
   });
-  nav.querySelectorAll("a").forEach(link => link.addEventListener("click", () => nav.classList.remove("open")));
+
+  nav.querySelectorAll("a").forEach(link => link.addEventListener("click", closeMenu));
+  document.addEventListener("click", event => {
+    if (!nav.contains(event.target) && !toggle.contains(event.target)) closeMenu();
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") closeMenu();
+  });
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 980) closeMenu();
+  });
 }
 
 document.getElementById("year").textContent = new Date().getFullYear();
