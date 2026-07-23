@@ -166,7 +166,7 @@ function renderFeatured(products) {
 async function loadHomeProducts() {
   renderSkeletons();
   try {
-    const response = await fetch(`${MOBEL_CONFIG.apiUrl}/productos`, {
+    const response = await fetch(`${MOBEL_CONFIG.apiUrl}/productos?limit=${HOME_PRODUCT_LIMIT}`, {
       headers: { Accept: "application/json" }
     });
     if (!response.ok) throw new Error(`Error ${response.status}`);
@@ -174,10 +174,10 @@ async function loadHomeProducts() {
     const products = (data.productos || []).map(normalizeProduct).filter(product => product.id && product.nombre);
 
     const count = document.getElementById("productCount");
-    if (count) count.textContent = `+${products.length}`;
+    if (count && data.total) count.textContent = `+${data.total}`;
 
     renderFeatured(products);
-    setTimeout(() => renderCategories(products), 0);
+    setTimeout(() => renderCategories(categoryData.map(item => ({ categoria: item.nombre }))), 0);
   } catch (error) {
     console.error(error);
     const grid = document.getElementById("productsGrid");
