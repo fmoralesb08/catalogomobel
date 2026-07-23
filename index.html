@@ -34,7 +34,6 @@
   <meta name="twitter:image" content="https://catalogomobel.com/og-mobel.jpg" />
 
   <link rel="preload" as="image" href="img/hero-mobel.jpg" />
-  <link rel="preconnect" href="https://mobel-api.fmoralesb08.workers.dev" crossorigin />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -60,7 +59,7 @@
       </button>
    <nav id="mainNav">
   <a href="#categorias">Categorías</a>
-  <a href="#productos">Productos</a>
+  <a href="catalogo.html">Catálogo</a>
   <a href="#tienda">Tienda física</a>
   <a href="#contacto">Contacto</a>
 </nav>
@@ -172,23 +171,21 @@
       <div class="container">
         <div class="section-heading reveal">
           <div>
-            <span class="eyebrow">Productos destacados</span>
+            <span class="eyebrow">Los más buscados</span>
             <h2>Productos favoritos de nuestros clientes</h2>
           </div>
-          <p>Explora una selección de productos destacados. Usa el buscador, elige una categoría o abre el catálogo completo.</p>
-        </div>
-
-        <div class="catalog-toolbar reveal">
-          <label class="search-box">
-            <span>⌕</span>
-            <input id="searchInput" type="search" placeholder="Buscar producto..." aria-label="Buscar producto" />
-          </label>
-          <div id="categoryFilters" class="filters"></div>
-          <p id="searchResultsCount" class="search-results-count" aria-live="polite"></p>
+          <p>Una selección de productos destacados. Para buscar entre todo el inventario, abre nuestro catálogo completo.</p>
         </div>
 
         <div id="productsGrid" class="products-grid"></div>
-        <p id="emptyState" class="empty-state" hidden>No encontramos productos con esa búsqueda.</p>
+        <p id="emptyState" class="empty-state" hidden>No fue posible cargar los productos destacados.</p>
+
+        <div class="catalog-actions reveal">
+          <a class="btn btn-primary catalog-page-link" href="catalogo.html">
+            Ver catálogo completo
+            <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        </div>
       </div>
     </section>
 
@@ -248,7 +245,7 @@
       <div>
         <strong>Navegación</strong>
         <a href="#categorias">Categorías</a>
-        <a href="#productos">Productos</a>
+        <a href="catalogo.html">Catálogo</a>
       </div>
       <div>
         <strong>Contacto</strong>

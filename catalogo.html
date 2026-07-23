@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <script>document.documentElement.classList.add("js")</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo completo | MOBEL</title>
+  <meta name="description" content="Consulta el catálogo completo de productos de limpieza MOBEL en Culiacán.">
+  <meta name="theme-color" content="#06386f">
+  <link rel="canonical" href="https://catalogomobel.com/catalogo.html">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="preconnect" href="https://mobel-api.fmoralesb08.workers.dev" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-track">
+      <span>🚚 Mayoreo y menudeo &nbsp;&nbsp;•&nbsp;&nbsp; Entregas en todo Culiacán &nbsp;&nbsp;•&nbsp;&nbsp; Facturación disponible &nbsp;&nbsp;•&nbsp;&nbsp; Atención personalizada</span>
+      <span>🚚 Mayoreo y menudeo &nbsp;&nbsp;•&nbsp;&nbsp; Entregas en todo Culiacán &nbsp;&nbsp;•&nbsp;&nbsp; Facturación disponible &nbsp;&nbsp;•&nbsp;&nbsp; Atención personalizada</span>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="index.html" aria-label="Volver al inicio">
+        <img src="img/logo-mobel.png" alt="MOBEL" class="brand-logo">
+      </a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <nav id="mainNav">
+        <a href="index.html">Inicio</a>
+        <a href="catalogo.html">Catálogo</a>
+        <a href="index.html#tienda">Tienda física</a>
+        <a href="index.html#contacto">Contacto</a>
+      </nav>
+      <a class="btn btn-primary nav-cta" data-whatsapp href="#">Cotizar por WhatsApp</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="catalog-hero">
+      <div class="container">
+        <span class="eyebrow">Catálogo completo</span>
+        <h1>Encuentra lo que necesitas</h1>
+        <p>Busca por nombre o SKU y filtra por categoría. Los productos se muestran por bloques para que la página sea más rápida.</p>
+      </div>
+    </section>
+
+    <section class="section catalog-page-section">
+      <div class="container">
+        <div class="catalog-toolbar catalog-page-toolbar">
+          <label class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input id="catalogSearch" type="search" placeholder="Buscar producto o SKU..." autocomplete="off">
+          </label>
+          <div id="catalogFilters" class="filters"></div>
+          <p id="catalogCount" class="search-results-count" aria-live="polite"></p>
+        </div>
+
+        <div id="catalogGrid" class="products-grid"></div>
+        <div id="catalogEmpty" class="empty-state" hidden>No encontramos productos con esos filtros.</div>
+
+        <div class="catalog-actions">
+          <button id="loadMoreBtn" class="btn btn-primary" type="button">
+            Cargar más productos
+            <i class="fa-solid fa-arrow-down"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <img src="img/logo-mobel.png" alt="MOBEL" class="footer-logo">
+        <p>Productos de limpieza para empresas, comercios y hogar.</p>
+      </div>
+      <div>
+        <strong>Navegación</strong>
+        <a href="index.html">Inicio</a>
+        <a href="catalogo.html">Catálogo</a>
+      </div>
+      <div>
+        <strong>Contacto</strong>
+        <p>Culiacán, Sinaloa, México</p>
+        <a data-whatsapp href="#">WhatsApp</a>
+        <a href="https://www.instagram.com/mobel.cln/" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://www.facebook.com/mobel.cln/" target="_blank" rel="noopener">Facebook</a>
+      </div>
+    </div>
+    <div class="container footer-bottom">© <span id="year"></span> MOBEL. Todos los derechos reservados.</div>
+  </footer>
+
+  <a class="floating-social floating-instagram" href="https://www.instagram.com/mobel.cln/" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+  <a class="floating-social floating-facebook" href="https://www.facebook.com/mobel.cln/" target="_blank" rel="noopener" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+  <a class="floating-social floating-whatsapp" data-whatsapp href="#" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+
+  <script src="config.js"></script>
+  <script src="catalogo.js"></script>
+</body>
+</html>
