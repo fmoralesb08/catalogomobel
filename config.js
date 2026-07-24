@@ -1,4 +1,3 @@
-// CONFIGURACIÓN DE MOBEL
 const MOBEL_CONFIG = {
   whatsappNumber: "526677740826",
   apiUrl: "https://mobel-api.fmoralesb08.workers.dev",
