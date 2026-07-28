@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "shy-cloud-3084",
+  "name": "catalogomobel",
   "compatibility_date": "2026-07-23",
   "assets": {
     "directory": "."
