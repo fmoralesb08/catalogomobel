@@ -1,63 +1,9 @@
-function escapeHtml(value = "") {
-  return String(value).replace(/[&<>'"]/g, character => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#039;", '"': "&quot;"
-  })[character]);
-}
-
-function normalizeText(value = "") {
-  return String(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-}
-function normalizeHeader(value = "") { return normalizeText(value).replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, ""); }
-function parseCategories(value = "") {
-  const categories = String(value)
-    .split("|")
-    .map(category => category.trim())
-    .filter(Boolean);
-
-  return categories.length ? [...new Set(categories)] : ["Otros"];
-}
-
-function formatCategories(categories = []) {
-  return categories.join(" · ");
-}
-
-function parseCSV(text) {
-  const rows=[]; let row=[], value="", quoted=false;
-  for(let i=0;i<text.length;i++){const c=text[i],n=text[i+1]; if(c==='"'){if(quoted&&n==='"'){value+='"';i++;}else quoted=!quoted;}else if(c===','&&!quoted){row.push(value);value="";}else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&n==='\n')i++;row.push(value);if(row.some(x=>String(x).trim()!==""))rows.push(row);row=[];value="";}else value+=c;} row.push(value);if(row.some(x=>String(x).trim()!==""))rows.push(row);return rows;
-}
-function csvToObjects(text){const rows=parseCSV(text);if(rows.length<2)return[];const headers=rows[0].map(normalizeHeader);return rows.slice(1).map(row=>Object.fromEntries(headers.map((h,i)=>[h,String(row[i]??"").trim()])));}
-function isTruthy(value, emptyDefault=false){const n=normalizeText(value);if(!n)return emptyDefault;return["true","verdadero","si","1","x","activo","visible","mostrar","destacado"].includes(n);}
-function getPrice(product){const raw=product.precio??product.price??product.precio_venta;if(raw===null||raw===undefined||raw==="")return null;const value=Number(String(raw).replace(/,/g,"").replace(/[^0-9.-]/g,""));return Number.isFinite(value)?value:null;}
-function formatPrice(value){return value===null?"Cotizar":new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN"}).format(value);}
-function normalizeImage(value=""){const image=String(value).trim();if(!image)return"";if(/^https?:\/\//i.test(image))return image;const clean=image.replace(/^\.?\//,"").replace(/^img\/productos\//i,"").replace(/^productos\//i,"");return`${MOBEL_CONFIG.imageBaseUrl}${encodeURI(clean)}`;}
-function normalizeProduct(product,index){return{id:product.sku||product.id||`producto-${index+1}`,nombre:product.nombre||product.producto||"Producto",categorias:parseCategories(product.categoria||product.category||"Otros"),categoria:parseCategories(product.categoria||product.category||"Otros")[0],descripcion:product.descripcion||"",imagen:normalizeImage(product.imagen||product.archivo_imagen_sugerido||product.foto||""),unidad:product.presentacion||product.unidad||"",precio:getPrice(product),mostrar:isTruthy(product.mostrar,true)};}
-async function fetchProducts(){const separator=MOBEL_CONFIG.sheetCsvUrl.includes("?")?"&":"?";const response=await fetch(`${MOBEL_CONFIG.sheetCsvUrl}${separator}v=${Date.now()}`,{cache:"no-store"});if(!response.ok)throw new Error(`Error ${response.status}`);return csvToObjects(await response.text()).map(normalizeProduct).filter(p=>p.nombre&&p.mostrar);}
-
-async function loadProduct() {
-  const holder = document.getElementById("productDetail");
-  const id = new URLSearchParams(window.location.search).get("id");
-  if (!holder) return;
-  if (!id) { holder.innerHTML = '<p class="empty-state">Producto no válido.</p>'; return; }
-  try {
-    const products = await fetchProducts();
-    const product = products.find(item => String(item.id) === String(id));
-    if (!product) throw new Error("Producto no encontrado");
-    document.title = `${product.nombre} | MOBEL`;
-    const message = `Hola, me interesa el producto: ${product.nombre}. ¿Me pueden dar información?`;
-    const whatsappUrl = `https://wa.me/${MOBEL_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
-    const headerWhatsapp = document.getElementById("headerWhatsapp");
-    if (headerWhatsapp) headerWhatsapp.href = whatsappUrl;
-    holder.innerHTML = `<div class="product-detail-media">${product.imagen
-      ? `<img src="${escapeHtml(product.imagen)}" alt="${escapeHtml(product.nombre)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="image-placeholder product-detail-placeholder" style="display:none">🧴</div>`
-      : '<div class="image-placeholder product-detail-placeholder">🧴</div>'}</div>
-      <div class="product-detail-content"><span class="product-category">${escapeHtml(formatCategories(product.categorias))}</span>
-      <h1>${escapeHtml(product.nombre)}</h1><div class="product-detail-price${product.precio === null ? " product-price-quote" : ""}">${formatPrice(product.precio)}</div>
-      ${product.unidad ? `<p class="product-meta"><strong>Presentación:</strong> ${escapeHtml(product.unidad)}</p>` : ""}
-      <p>${escapeHtml(product.descripcion || "Solicita información, presentación y disponibilidad por WhatsApp.")}</p>
-      <a class="btn btn-primary" href="${whatsappUrl}" target="_blank" rel="noopener">Solicitar información</a></div>`;
-  } catch (error) {
-    console.error(error);
-    holder.innerHTML = '<p class="empty-state">No fue posible encontrar este producto.</p>';
-  }
-}
-const year=document.getElementById("year");if(year)year.textContent=new Date().getFullYear();loadProduct();
+const CACHE_KEY="mobel_products_cache_v3",CACHE_TTL=30*60*1000,QUOTE_KEY="mobel_quote_cart_v1";
+function escapeHtml(v=""){return String(v).replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#039;",'"':"&quot;"})[c]);}
+function normalizeText(v=""){return String(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();}function normalizeHeader(v=""){return normalizeText(v).replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"");}function parseCategories(v=""){const a=String(v).split("|").map(x=>x.trim()).filter(Boolean);return a.length?[...new Set(a)]:["Otros"];}function formatCategories(a=[]){return a.join(" · ");}
+function parseCSV(text){const rows=[];let row=[],value="",quoted=false;for(let i=0;i<text.length;i++){const c=text[i],n=text[i+1];if(c==='"'){if(quoted&&n==='"'){value+='"';i++;}else quoted=!quoted;}else if(c===","&&!quoted){row.push(value);value="";}else if((c==="\n"||c==="\r")&&!quoted){if(c==="\r"&&n==="\n")i++;row.push(value);if(row.some(x=>String(x).trim()))rows.push(row);row=[];value="";}else value+=c;}row.push(value);if(row.some(x=>String(x).trim()))rows.push(row);return rows;}function csvToObjects(text){const rows=parseCSV(text);if(rows.length<2)return[];const h=rows[0].map(normalizeHeader);return rows.slice(1).map(row=>Object.fromEntries(h.map((x,i)=>[x,String(row[i]??"").trim()])));}function isTruthy(v,d=false){const n=normalizeText(v);if(!n)return d;return["true","verdadero","si","1","x","activo","visible","mostrar","destacado"].includes(n);}function getPrice(p){const r=p.precio??p.price??p.precio_venta;if(r===null||r===undefined||r==="")return null;const v=Number(String(r).replace(/,/g,"").replace(/[^0-9.-]/g,""));return Number.isFinite(v)?v:null;}function formatPrice(v){return v===null?"Cotizar":new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN"}).format(v);}function normalizeImage(v=""){const image=String(v).trim();if(!image)return"";if(/^https?:\/\//i.test(image))return image;const clean=image.replace(/^\.?\//,"").replace(/^img\/productos\//i,"").replace(/^productos\//i,"");return`${MOBEL_CONFIG.imageBaseUrl}${encodeURI(clean)}`;}function normalizeProduct(p,i){const categorias=parseCategories(p.categoria||p.category||"Otros");return{id:p.sku||p.id||`producto-${i+1}`,nombre:p.nombre||p.producto||"Producto",categorias,categoria:categorias[0],descripcion:p.descripcion||p.description||"",imagen:normalizeImage(p.imagen||p.archivo_imagen_sugerido||p.foto||p.image||""),unidad:p.presentacion||p.unidad||p.medida||"",marca:p.marca||p.brand||"",precio:getPrice(p),etiqueta:p.etiqueta||p.label||"",orden:Number(p.orden||9999),mostrar:isTruthy(p.mostrar??p.activo,true)};}
+function readCache(){try{const c=JSON.parse(localStorage.getItem(CACHE_KEY)||"null");return c&&Array.isArray(c.products)?c:null;}catch{return null;}}function writeCache(products){try{localStorage.setItem(CACHE_KEY,JSON.stringify({timestamp:Date.now(),products}));}catch{}}async function fetchFreshProducts(){const s=MOBEL_CONFIG.sheetCsvUrl.includes("?")?"&":"?";const r=await fetch(`${MOBEL_CONFIG.sheetCsvUrl}${s}v=${Date.now()}`,{cache:"no-store"});if(!r.ok)throw new Error(`Error ${r.status}`);const products=csvToObjects(await r.text()).map(normalizeProduct).filter(p=>p.nombre&&p.mostrar).sort((a,b)=>a.orden-b.orden||a.nombre.localeCompare(b.nombre,"es"));writeCache(products);return products;}async function fetchProducts(){const c=readCache();if(c){if(Date.now()-c.timestamp>CACHE_TTL)fetchFreshProducts().catch(()=>{});return c.products;}return fetchFreshProducts();}
+function getQuote(){try{return JSON.parse(localStorage.getItem(QUOTE_KEY)||"[]");}catch{return[];}}function saveQuote(items){localStorage.setItem(QUOTE_KEY,JSON.stringify(items));updateQuoteBar();}function addToQuote(product){const items=getQuote();if(!items.some(i=>String(i.id)===String(product.id)))items.push({id:product.id,nombre:product.nombre});saveQuote(items);}function removeFromQuote(id){saveQuote(getQuote().filter(i=>String(i.id)!==String(id)));}function sendQuote(){const items=getQuote();if(!items.length)return;const msg=`Hola, me interesa cotizar:\n\n${items.map(i=>`• ${i.nombre}`).join("\n")}\n\nGracias.`;window.open(`https://wa.me/${MOBEL_CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`,"_blank","noopener");}
+function injectStyles(){if(document.getElementById("mobel-product-v3"))return;const s=document.createElement("style");s.id="mobel-product-v3";s.textContent=`.product-detail-label{display:inline-flex;background:#102d50;color:#fff;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:800;margin-bottom:10px}.product-detail-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.quote-detail-btn{border:1px solid #58b52d;background:#fff;color:#2f7613;border-radius:12px;padding:13px 18px;font-weight:800;cursor:pointer}#mobelQuoteBar{position:fixed;z-index:999;left:0;right:0;bottom:0;background:#102d50;color:#fff;padding:14px 20px;box-shadow:0 -8px 28px rgba(0,0,0,.18)}.mobel-quote-inner{max-width:1120px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:16px}.mobel-quote-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.mobel-quote-list button{border:0;background:rgba(255,255,255,.14);color:#fff;border-radius:999px;padding:5px 9px;cursor:pointer}.mobel-quote-send{border:0;border-radius:12px;background:#58b52d;color:#fff;padding:13px 18px;font-weight:800;cursor:pointer}@media(max-width:640px){.mobel-quote-inner{align-items:flex-start;flex-direction:column}.mobel-quote-send{width:100%}}`;document.head.appendChild(s);}function setupQuoteBar(){if(document.getElementById("mobelQuoteBar"))return;const bar=document.createElement("aside");bar.id="mobelQuoteBar";bar.hidden=true;bar.innerHTML=`<div class="mobel-quote-inner"><div><strong>Cotización (<span data-quote-count>0</span>)</strong><div class="mobel-quote-list" data-quote-list></div></div><button class="mobel-quote-send" type="button">Enviar por WhatsApp</button></div>`;document.body.appendChild(bar);bar.addEventListener("click",e=>{const r=e.target.closest("[data-remove-quote]");if(r)removeFromQuote(r.dataset.removeQuote);if(e.target.closest(".mobel-quote-send"))sendQuote();});updateQuoteBar();}function updateQuoteBar(){const bar=document.getElementById("mobelQuoteBar");if(!bar)return;const items=getQuote();bar.hidden=!items.length;bar.querySelector("[data-quote-count]").textContent=items.length;bar.querySelector("[data-quote-list]").innerHTML=items.map(i=>`<button type="button" data-remove-quote="${escapeHtml(i.id)}">${escapeHtml(i.nombre)} ×</button>`).join("");}
+async function loadProduct(){const holder=document.getElementById("productDetail"),id=new URLSearchParams(location.search).get("id");if(!holder)return;if(!id){holder.innerHTML='<p class="empty-state">Producto no válido.</p>';return;}try{const products=await fetchProducts(),p=products.find(x=>String(x.id)===String(id));if(!p)throw new Error("Producto no encontrado");document.title=`${p.nombre} | MOBEL`;const msg=`Hola, me interesa el producto: ${p.nombre}. ¿Me pueden dar información?`,wa=`https://wa.me/${MOBEL_CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`,header=document.getElementById("headerWhatsapp");if(header)header.href=wa;holder.innerHTML=`<div class="product-detail-media">${p.imagen?`<img src="${escapeHtml(p.imagen)}" alt="${escapeHtml(p.nombre)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="image-placeholder product-detail-placeholder" style="display:none">🧴</div>`:'<div class="image-placeholder product-detail-placeholder">🧴</div>'}</div><div class="product-detail-content">${p.etiqueta?`<span class="product-detail-label">${escapeHtml(p.etiqueta)}</span>`:""}<span class="product-category">${escapeHtml(formatCategories(p.categorias))}</span><h1>${escapeHtml(p.nombre)}</h1><div class="product-detail-price${p.precio===null?" product-price-quote":""}">${formatPrice(p.precio)}</div>${p.unidad?`<p class="product-meta"><strong>Presentación:</strong> ${escapeHtml(p.unidad)}</p>`:""}${p.marca?`<p class="product-meta"><strong>Marca:</strong> ${escapeHtml(p.marca)}</p>`:""}<p>${escapeHtml(p.descripcion||"Solicita información, presentación y disponibilidad por WhatsApp.")}</p><div class="product-detail-actions"><a class="btn btn-primary" href="${wa}" target="_blank" rel="noopener">Solicitar información</a><button class="quote-detail-btn" type="button">Agregar a cotización</button></div></div>`;holder.querySelector(".quote-detail-btn")?.addEventListener("click",e=>{addToQuote(p);e.currentTarget.textContent="Agregado ✓";});}catch(err){console.error(err);holder.innerHTML='<p class="empty-state">No fue posible encontrar este producto.</p>';}}
+const year=document.getElementById("year");if(year)year.textContent=new Date().getFullYear();injectStyles();setupQuoteBar();loadProduct();

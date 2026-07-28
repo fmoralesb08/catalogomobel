@@ -1,0 +1,35 @@
+MOBEL V3 — INSTALACIÓN
+
+1. Reemplaza en GitHub estos archivos:
+   - app.js
+   - catalogo.js
+   - producto.js
+
+2. Haz Commit changes y espera el despliegue de Cloudflare Pages.
+
+3. Actualiza el sitio con Ctrl + F5.
+
+FUNCIONES INCLUIDAS
+- Buscador visible en Inicio.
+- Autocompletado mientras escribes.
+- Búsqueda por nombre, categoría, descripción, presentación, marca y etiqueta.
+- Botones rápidos: Cloro, Bolsas, Papel, Detergente y Escobas.
+- Caché local por 30 minutos para mostrar productos más rápido.
+- Varias categorías separadas con |.
+- Carrito de cotización de varios productos por WhatsApp.
+- Etiquetas opcionales como NUEVO o MÁS VENDIDO.
+- Orden manual y control de productos activos.
+
+COLUMNAS OPCIONALES EN GOOGLE SHEETS
+- Marca
+- Etiqueta
+- Orden
+- Activo
+
+Ejemplos:
+Categoria: Líquidos | Cocina
+Etiqueta: MÁS VENDIDO
+Orden: 1
+Activo: SI
+
+No es necesario agregar estas columnas para que el catálogo siga funcionando.

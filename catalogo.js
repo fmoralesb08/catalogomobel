@@ -1,224 +1,38 @@
 const PAGE_SIZE = 24;
-let allProducts = [];
-let filteredProducts = [];
-let visibleCount = PAGE_SIZE;
-let activeCategory = "Todos";
-
-function escapeHtml(value = "") {
-  return String(value).replace(/[&<>'"]/g, character => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#039;", '"': "&quot;"
-  })[character]);
-}
-
-function normalizeText(value = "") {
-  return String(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-}
-
-function normalizeHeader(value = "") {
-  return normalizeText(value).replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
-}
-function parseCategories(value = "") {
-  const categories = String(value)
-    .split("|")
-    .map(category => category.trim())
-    .filter(Boolean);
-
-  return categories.length ? [...new Set(categories)] : ["Otros"];
-}
-
-function formatCategories(categories = []) {
-  return categories.join(" · ");
-}
-
-
-function parseCSV(text) {
-  const rows = [];
-  let row = [], value = "", quoted = false;
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i], next = text[i + 1];
-    if (char === '"') {
-      if (quoted && next === '"') { value += '"'; i++; }
-      else quoted = !quoted;
-    } else if (char === "," && !quoted) {
-      row.push(value); value = "";
-    } else if ((char === "\n" || char === "\r") && !quoted) {
-      if (char === "\r" && next === "\n") i++;
-      row.push(value);
-      if (row.some(cell => String(cell).trim() !== "")) rows.push(row);
-      row = []; value = "";
-    } else value += char;
-  }
-  row.push(value);
-  if (row.some(cell => String(cell).trim() !== "")) rows.push(row);
-  return rows;
-}
-
-function csvToObjects(text) {
-  const rows = parseCSV(text);
-  if (rows.length < 2) return [];
-  const headers = rows[0].map(normalizeHeader);
-  return rows.slice(1).map(row => Object.fromEntries(headers.map((header, i) => [header, String(row[i] ?? "").trim()])));
-}
-
-function isTruthy(value, emptyDefault = false) {
-  const normalized = normalizeText(value);
-  if (!normalized) return emptyDefault;
-  return ["true", "verdadero", "si", "1", "x", "activo", "visible", "mostrar", "destacado"].includes(normalized);
-}
-
-function getPrice(product) {
-  const raw = product.precio ?? product.price ?? product.precio_venta;
-  if (raw === null || raw === undefined || raw === "") return null;
-  const value = Number(String(raw).replace(/,/g, "").replace(/[^0-9.-]/g, ""));
-  return Number.isFinite(value) ? value : null;
-}
-
-function formatPrice(value) {
-  return value === null ? "Cotizar" : new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(value);
-}
-
-function normalizeImage(value = "") {
-  const image = String(value).trim();
-  if (!image) return "";
-  if (/^https?:\/\//i.test(image)) return image;
-  const clean = image.replace(/^\.?\//, "").replace(/^img\/productos\//i, "").replace(/^productos\//i, "");
-  return `${MOBEL_CONFIG.imageBaseUrl}${encodeURI(clean)}`;
-}
-
-function normalizeProduct(product, index) {
-  return {
-    id: product.sku || product.id || `producto-${index + 1}`,
-    nombre: product.nombre || product.producto || "Producto",
-    categorias: parseCategories(product.categoria || product.category || "Otros"),
-    categoria: parseCategories(product.categoria || product.category || "Otros")[0],
-    descripcion: product.descripcion || product.description || "",
-    imagen: normalizeImage(product.imagen || product.archivo_imagen_sugerido || product.foto || product.image || ""),
-    unidad: product.presentacion || product.unidad || product.medida || "",
-    precio: getPrice(product),
-    destacado: isTruthy(product.destacado, false),
-    mostrar: isTruthy(product.mostrar, true)
-  };
-}
-
-async function fetchProducts() {
-  const separator = MOBEL_CONFIG.sheetCsvUrl.includes("?") ? "&" : "?";
-  const response = await fetch(`${MOBEL_CONFIG.sheetCsvUrl}${separator}v=${Date.now()}`, { cache: "no-store" });
-  if (!response.ok) throw new Error(`Error ${response.status}`);
-  const products = csvToObjects(await response.text()).map(normalizeProduct);
-  return products.filter(product => product.nombre && product.mostrar);
-}
-
-function setupWhatsApp() {
-  document.querySelectorAll("[data-whatsapp]").forEach(link => {
-    link.href = `https://wa.me/${MOBEL_CONFIG.whatsappNumber}?text=${encodeURIComponent(MOBEL_CONFIG.defaultMessage)}`;
-    link.target = "_blank";
-    link.rel = "noopener";
-  });
-}
-
-function setupMenu() {
-  const toggle = document.getElementById("menuToggle");
-  const nav = document.getElementById("mainNav");
-  if (!toggle || !nav) return;
-  toggle.addEventListener("click", () => {
-    nav.classList.toggle("open");
-    toggle.setAttribute("aria-expanded", String(nav.classList.contains("open")));
-  });
-}
-
-function renderSkeletons() {
-  const grid = document.getElementById("catalogGrid");
-  if (!grid) return;
-  grid.innerHTML = Array.from({ length: 8 }, () => `
-    <article class="product-card product-skeleton" aria-hidden="true">
-      <div class="skeleton-image"></div><div class="product-content">
-      <div class="skeleton-line skeleton-small"></div><div class="skeleton-line skeleton-title"></div>
-      <div class="skeleton-line"></div><div class="skeleton-line skeleton-button"></div></div>
-    </article>`).join("");
-}
-
-function renderFilters() {
-  const holder = document.getElementById("catalogFilters");
-  if (!holder) return;
-  const categories = ["Todos", ...new Set(
-    allProducts.flatMap(product => product.categorias || [product.categoria]).filter(Boolean)
-  )];
-  categories.sort((a, b) => a === "Todos" ? -1 : b === "Todos" ? 1 : a.localeCompare(b, "es", { sensitivity: "base" }));
-  holder.innerHTML = categories.map(category => `<button class="filter-btn ${category === activeCategory ? "active" : ""}" data-category="${escapeHtml(category)}" type="button">${escapeHtml(category)}</button>`).join("");
-  holder.querySelectorAll(".filter-btn").forEach(button => button.addEventListener("click", () => {
-    activeCategory = button.dataset.category;
-    visibleCount = PAGE_SIZE;
-    renderFilters();
-    applyFilters();
-  }));
-}
-
-function productCard(product) {
-  const detailUrl = `producto.html?id=${encodeURIComponent(product.id)}`;
-  const message = `Hola, me interesa el producto: ${product.nombre}. ¿Me pueden dar información?`;
-  const whatsappUrl = `https://wa.me/${MOBEL_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
-  const description = product.descripcion || (product.unidad ? `Presentación: ${product.unidad}` : "Solicita información y disponibilidad.");
-  return `<article class="product-card">
-    <a class="product-image" href="${detailUrl}">${product.imagen
-      ? `<img src="${escapeHtml(product.imagen)}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="image-placeholder" aria-hidden="true" style="display:none">🧴</div>`
-      : `<div class="image-placeholder" aria-hidden="true">🧴</div>`}</a>
-    <div class="product-content"><div class="product-meta"><span>${escapeHtml(formatCategories(product.categorias))}</span></div>
-    <h3><a href="${detailUrl}">${escapeHtml(product.nombre)}</a></h3>
-    <div class="product-price${product.precio === null ? " product-price-quote" : ""}">${formatPrice(product.precio)}</div>
-    <p>${escapeHtml(description)}</p><div class="product-actions"><a class="btn btn-secondary" href="${detailUrl}">Ver producto</a>
-    <a class="icon-btn" href="${whatsappUrl}" target="_blank" rel="noopener" aria-label="Consultar por WhatsApp"><i class="fa-brands fa-whatsapp"></i></a></div></div>
-  </article>`;
-}
-
-function applyFilters() {
-  const query = normalizeText(document.getElementById("catalogSearch")?.value || "");
-  filteredProducts = allProducts.filter(product => {
-    const categoryMatch = activeCategory === "Todos" || (product.categorias || []).includes(activeCategory);
-    const text = normalizeText(`${product.nombre} ${formatCategories(product.categorias)} ${product.descripcion} ${product.unidad}`);
-    return categoryMatch && (!query || text.includes(query));
-  });
-  renderProducts();
-}
-
-function renderProducts() {
-  const grid = document.getElementById("catalogGrid");
-  const empty = document.getElementById("catalogEmpty");
-  const count = document.getElementById("catalogCount");
-  const loadMore = document.getElementById("loadMoreBtn");
-  if (!grid || !empty || !count || !loadMore) return;
-  const visible = filteredProducts.slice(0, visibleCount);
-  grid.innerHTML = visible.map(productCard).join("");
-  empty.hidden = filteredProducts.length > 0;
-  count.textContent = `${filteredProducts.length} producto${filteredProducts.length === 1 ? "" : "s"} encontrado${filteredProducts.length === 1 ? "" : "s"}`;
-  loadMore.hidden = visibleCount >= filteredProducts.length;
-}
-
-async function loadCatalog() {
-  renderSkeletons();
-  try {
-    allProducts = await fetchProducts();
-    const params = new URLSearchParams(location.search);
-    const requestedCategory = params.get("categoria");
-    const requestedSearch = params.get("buscar");
-    if (requestedCategory && allProducts.some(product => (product.categorias || []).includes(requestedCategory))) {
-      activeCategory = requestedCategory;
-    }
-    const searchInput = document.getElementById("catalogSearch");
-    if (requestedSearch && searchInput) searchInput.value = requestedSearch;
-    renderFilters();
-    applyFilters();
-  } catch (error) {
-    console.error("Error al cargar Google Sheets:", error);
-    const grid = document.getElementById("catalogGrid");
-    const empty = document.getElementById("catalogEmpty");
-    const loadMore = document.getElementById("loadMoreBtn");
-    if (grid) grid.innerHTML = "";
-    if (empty) { empty.hidden = false; empty.textContent = "No fue posible cargar el catálogo. Revisa que Google Sheets esté publicado en la web."; }
-    if (loadMore) loadMore.hidden = true;
-  }
-}
-
-document.getElementById("catalogSearch")?.addEventListener("input", () => { visibleCount = PAGE_SIZE; applyFilters(); });
-document.getElementById("loadMoreBtn")?.addEventListener("click", () => { visibleCount += PAGE_SIZE; renderProducts(); });
-const year = document.getElementById("year"); if (year) year.textContent = new Date().getFullYear();
-setupMenu(); setupWhatsApp(); loadCatalog();
+const CACHE_KEY = "mobel_products_cache_v3";
+const CACHE_TTL = 30 * 60 * 1000;
+const QUOTE_KEY = "mobel_quote_cart_v1";
+let allProducts = [], filteredProducts = [], visibleCount = PAGE_SIZE, activeCategory = "Todos";
+function escapeHtml(v=""){return String(v).replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#039;",'"':"&quot;"})[c]);}
+function normalizeText(v=""){return String(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();}
+function normalizeHeader(v=""){return normalizeText(v).replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"");}
+function parseCategories(v=""){const a=String(v).split("|").map(x=>x.trim()).filter(Boolean);return a.length?[...new Set(a)]:["Otros"];}
+function formatCategories(a=[]){return a.join(" · ");}
+function parseCSV(text){const rows=[];let row=[],value="",quoted=false;for(let i=0;i<text.length;i++){const c=text[i],n=text[i+1];if(c==='"'){if(quoted&&n==='"'){value+='"';i++;}else quoted=!quoted;}else if(c===","&&!quoted){row.push(value);value="";}else if((c==="\n"||c==="\r")&&!quoted){if(c==="\r"&&n==="\n")i++;row.push(value);if(row.some(x=>String(x).trim()))rows.push(row);row=[];value="";}else value+=c;}row.push(value);if(row.some(x=>String(x).trim()))rows.push(row);return rows;}
+function csvToObjects(text){const rows=parseCSV(text);if(rows.length<2)return[];const h=rows[0].map(normalizeHeader);return rows.slice(1).map(row=>Object.fromEntries(h.map((x,i)=>[x,String(row[i]??"").trim()])));}
+function isTruthy(v,d=false){const n=normalizeText(v);if(!n)return d;return["true","verdadero","si","1","x","activo","visible","mostrar","destacado"].includes(n);}
+function getPrice(p){const r=p.precio??p.price??p.precio_venta;if(r===null||r===undefined||r==="")return null;const v=Number(String(r).replace(/,/g,"").replace(/[^0-9.-]/g,""));return Number.isFinite(v)?v:null;}
+function formatPrice(v){return v===null?"Cotizar":new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN"}).format(v);}
+function normalizeImage(v=""){const image=String(v).trim();if(!image)return"";if(/^https?:\/\//i.test(image))return image;const clean=image.replace(/^\.?\//,"").replace(/^img\/productos\//i,"").replace(/^productos\//i,"");return`${MOBEL_CONFIG.imageBaseUrl}${encodeURI(clean)}`;}
+function normalizeProduct(p,i){const categorias=parseCategories(p.categoria||p.category||"Otros");return{id:p.sku||p.id||`producto-${i+1}`,nombre:p.nombre||p.producto||"Producto",categorias,categoria:categorias[0],descripcion:p.descripcion||p.description||"",imagen:normalizeImage(p.imagen||p.archivo_imagen_sugerido||p.foto||p.image||""),unidad:p.presentacion||p.unidad||p.medida||"",marca:p.marca||p.brand||"",precio:getPrice(p),destacado:isTruthy(p.destacado,false),etiqueta:p.etiqueta||p.label||"",orden:Number(p.orden||9999),mostrar:isTruthy(p.mostrar??p.activo,true)};}
+function readCache(){try{const c=JSON.parse(localStorage.getItem(CACHE_KEY)||"null");return c&&Array.isArray(c.products)?c:null;}catch{return null;}}
+function writeCache(products){try{localStorage.setItem(CACHE_KEY,JSON.stringify({timestamp:Date.now(),products}));}catch{}}
+async function fetchFreshProducts(){const s=MOBEL_CONFIG.sheetCsvUrl.includes("?")?"&":"?";const r=await fetch(`${MOBEL_CONFIG.sheetCsvUrl}${s}v=${Date.now()}`,{cache:"no-store"});if(!r.ok)throw new Error(`Error ${r.status}`);const products=csvToObjects(await r.text()).map(normalizeProduct).filter(p=>p.nombre&&p.mostrar).sort((a,b)=>a.orden-b.orden||a.nombre.localeCompare(b.nombre,"es"));writeCache(products);return products;}
+async function fetchProducts(){const c=readCache();if(c){if(Date.now()-c.timestamp>CACHE_TTL)fetchFreshProducts().catch(()=>{});return c.products;}return fetchFreshProducts();}
+function setupWhatsApp(){document.querySelectorAll("[data-whatsapp]").forEach(l=>{l.href=`https://wa.me/${MOBEL_CONFIG.whatsappNumber}?text=${encodeURIComponent(MOBEL_CONFIG.defaultMessage)}`;l.target="_blank";l.rel="noopener";});}
+function setupMenu(){const t=document.getElementById("menuToggle"),n=document.getElementById("mainNav");if(!t||!n)return;t.addEventListener("click",()=>{n.classList.toggle("open");t.setAttribute("aria-expanded",String(n.classList.contains("open")));});}
+function getQuote(){try{return JSON.parse(localStorage.getItem(QUOTE_KEY)||"[]");}catch{return[];}}
+function saveQuote(items){localStorage.setItem(QUOTE_KEY,JSON.stringify(items));updateQuoteBar();}
+function addToQuote(product){const items=getQuote();if(!items.some(i=>String(i.id)===String(product.id)))items.push({id:product.id,nombre:product.nombre});saveQuote(items);}
+function removeFromQuote(id){saveQuote(getQuote().filter(i=>String(i.id)!==String(id)));}
+function sendQuote(){const items=getQuote();if(!items.length)return;const msg=`Hola, me interesa cotizar:\n\n${items.map(i=>`• ${i.nombre}`).join("\n")}\n\nGracias.`;window.open(`https://wa.me/${MOBEL_CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`,"_blank","noopener");}
+function injectStyles(){if(document.getElementById("mobel-catalog-v3"))return;const s=document.createElement("style");s.id="mobel-catalog-v3";s.textContent=`.product-label{position:absolute;top:12px;left:12px;z-index:2;background:#102d50;color:#fff;padding:6px 9px;border-radius:999px;font-size:11px;font-weight:800}.product-image{position:relative}.quote-add-btn{width:100%;margin-top:10px;border:1px solid #58b52d;background:#fff;color:#2f7613;border-radius:10px;padding:10px;font-weight:700;cursor:pointer}.quote-add-btn:hover{background:#f2faee}#mobelQuoteBar{position:fixed;z-index:999;left:0;right:0;bottom:0;background:#102d50;color:#fff;padding:14px 20px;box-shadow:0 -8px 28px rgba(0,0,0,.18)}.mobel-quote-inner{max-width:1120px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:16px}.mobel-quote-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.mobel-quote-list button{border:0;background:rgba(255,255,255,.14);color:#fff;border-radius:999px;padding:5px 9px;cursor:pointer}.mobel-quote-send{border:0;border-radius:12px;background:#58b52d;color:#fff;padding:13px 18px;font-weight:800;cursor:pointer}@media(max-width:640px){.mobel-quote-inner{align-items:flex-start;flex-direction:column}.mobel-quote-send{width:100%}}`;document.head.appendChild(s);}
+function setupQuoteBar(){if(document.getElementById("mobelQuoteBar"))return;const bar=document.createElement("aside");bar.id="mobelQuoteBar";bar.hidden=true;bar.innerHTML=`<div class="mobel-quote-inner"><div><strong>Cotización (<span data-quote-count>0</span>)</strong><div class="mobel-quote-list" data-quote-list></div></div><button class="mobel-quote-send" type="button">Enviar por WhatsApp</button></div>`;document.body.appendChild(bar);bar.addEventListener("click",e=>{const r=e.target.closest("[data-remove-quote]");if(r)removeFromQuote(r.dataset.removeQuote);if(e.target.closest(".mobel-quote-send"))sendQuote();});updateQuoteBar();}
+function updateQuoteBar(){const bar=document.getElementById("mobelQuoteBar");if(!bar)return;const items=getQuote();bar.hidden=!items.length;bar.querySelector("[data-quote-count]").textContent=items.length;bar.querySelector("[data-quote-list]").innerHTML=items.map(i=>`<button type="button" data-remove-quote="${escapeHtml(i.id)}">${escapeHtml(i.nombre)} ×</button>`).join("");}
+function renderSkeletons(){const g=document.getElementById("catalogGrid");if(g)g.innerHTML=Array.from({length:8},()=>`<article class="product-card product-skeleton"><div class="skeleton-image"></div><div class="product-content"><div class="skeleton-line skeleton-small"></div><div class="skeleton-line skeleton-title"></div><div class="skeleton-line"></div><div class="skeleton-line skeleton-button"></div></div></article>`).join("");}
+function renderFilters(){const h=document.getElementById("catalogFilters");if(!h)return;const cats=["Todos",...new Set(allProducts.flatMap(p=>p.categorias).filter(Boolean))].sort((a,b)=>a==="Todos"?-1:b==="Todos"?1:a.localeCompare(b,"es",{sensitivity:"base"}));h.innerHTML=cats.map(c=>`<button class="filter-btn ${c===activeCategory?"active":""}" data-category="${escapeHtml(c)}" type="button">${escapeHtml(c)}</button>`).join("");h.querySelectorAll(".filter-btn").forEach(b=>b.addEventListener("click",()=>{activeCategory=b.dataset.category;visibleCount=PAGE_SIZE;renderFilters();applyFilters();}));}
+function productCard(p){const detail=`producto.html?id=${encodeURIComponent(p.id)}`,msg=`Hola, me interesa el producto: ${p.nombre}. ¿Me pueden dar información?`,wa=`https://wa.me/${MOBEL_CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`,desc=p.descripcion||(p.unidad?`Presentación: ${p.unidad}`:"Solicita información y disponibilidad.");return`<article class="product-card"><a class="product-image" href="${detail}">${p.etiqueta?`<span class="product-label">${escapeHtml(p.etiqueta)}</span>`:""}${p.imagen?`<img src="${escapeHtml(p.imagen)}" alt="${escapeHtml(p.nombre)}" loading="lazy" decoding="async" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="image-placeholder" style="display:none">🧴</div>`:`<div class="image-placeholder">🧴</div>`}</a><div class="product-content"><div class="product-meta"><span>${escapeHtml(formatCategories(p.categorias))}</span></div><h3><a href="${detail}">${escapeHtml(p.nombre)}</a></h3><div class="product-price${p.precio===null?" product-price-quote":""}">${formatPrice(p.precio)}</div><p>${escapeHtml(desc)}</p><div class="product-actions"><a class="btn btn-secondary" href="${detail}">Ver producto</a><a class="icon-btn" href="${wa}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i></a></div><button class="quote-add-btn" type="button" data-add-quote="${escapeHtml(p.id)}">Agregar a cotización</button></div></article>`;}
+function applyFilters(){const q=normalizeText(document.getElementById("catalogSearch")?.value||"");filteredProducts=allProducts.filter(p=>{const cat=activeCategory==="Todos"||p.categorias.includes(activeCategory);const text=normalizeText(`${p.nombre} ${formatCategories(p.categorias)} ${p.descripcion} ${p.unidad} ${p.marca} ${p.etiqueta}`);return cat&&(!q||text.includes(q));});renderProducts();const url=new URL(location.href);if(q)url.searchParams.set("buscar",document.getElementById("catalogSearch").value.trim());else url.searchParams.delete("buscar");history.replaceState({},"",url);}
+function renderProducts(){const g=document.getElementById("catalogGrid"),e=document.getElementById("catalogEmpty"),c=document.getElementById("catalogCount"),l=document.getElementById("loadMoreBtn");if(!g||!e||!c||!l)return;const visible=filteredProducts.slice(0,visibleCount);g.innerHTML=visible.map(productCard).join("");e.hidden=filteredProducts.length>0;c.textContent=`${filteredProducts.length} producto${filteredProducts.length===1?"":"s"} encontrado${filteredProducts.length===1?"":"s"}`;l.hidden=visibleCount>=filteredProducts.length;}
+async function loadCatalog(){renderSkeletons();try{allProducts=await fetchProducts();const p=new URLSearchParams(location.search),cat=p.get("categoria"),search=p.get("buscar");if(cat&&allProducts.some(x=>x.categorias.includes(cat)))activeCategory=cat;const input=document.getElementById("catalogSearch");if(search&&input)input.value=search;renderFilters();applyFilters();}catch(err){console.error(err);const g=document.getElementById("catalogGrid"),e=document.getElementById("catalogEmpty"),l=document.getElementById("loadMoreBtn");if(g)g.innerHTML="";if(e){e.hidden=false;e.textContent="No fue posible cargar el catálogo. Revisa que Google Sheets esté publicado en la web.";}if(l)l.hidden=true;}}
+document.getElementById("catalogSearch")?.addEventListener("input",()=>{visibleCount=PAGE_SIZE;applyFilters();});document.getElementById("loadMoreBtn")?.addEventListener("click",()=>{visibleCount+=PAGE_SIZE;renderProducts();});document.getElementById("catalogGrid")?.addEventListener("click",e=>{const b=e.target.closest("[data-add-quote]");if(!b)return;const p=allProducts.find(x=>String(x.id)===String(b.dataset.addQuote));if(p){addToQuote(p);b.textContent="Agregado ✓";setTimeout(()=>b.textContent="Agregar a cotización",1200);}});const year=document.getElementById("year");if(year)year.textContent=new Date().getFullYear();injectStyles();setupMenu();setupWhatsApp();setupQuoteBar();loadCatalog();
