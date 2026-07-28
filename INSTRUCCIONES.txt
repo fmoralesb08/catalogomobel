@@ -1,16 +1,15 @@
-MOBEL – PRODUCTOS EN VARIAS CATEGORÍAS
+MOBEL V3 — Acordeón de categorías en celular
 
-Reemplaza en GitHub estos archivos:
-- app.js
-- catalogo.js
-- producto.js
+Reemplaza únicamente el archivo app.js de tu repositorio por el app.js incluido.
 
-En Google Sheets escribe varias categorías en la misma celda, separadas por una barra vertical |
+Funcionamiento:
+- En celulares (hasta 560 px), las categorías aparecen minimizadas por defecto.
+- El botón “Mostrar categorías” despliega la lista.
+- El botón cambia a “Ocultar categorías” para volver a minimizarla.
+- En tablet y computadora, las categorías permanecen abiertas y el botón no aparece.
+- Se conserva el buscador, categorías múltiples, cotización y caché de la versión V3.
 
-Ejemplos:
-Desengrasantes | Automotriz
-Cepillos | Cocina | Hogar
-
-No dupliques la fila. El mismo producto aparecerá en todos los filtros indicados.
-
-Después de hacer Commit changes, espera el despliegue de Cloudflare y actualiza con Ctrl + F5.
+Después de reemplazar el archivo:
+1. Haz Commit changes en GitHub.
+2. Espera el despliegue de Cloudflare Pages.
+3. Actualiza la página en el celular.

@@ -99,9 +99,69 @@ function injectV3Styles() {
 }
 function injectCategoryStyles() {
   if (document.getElementById("mobel-category-styles")) return;
-  const style = document.createElement("style"); style.id = "mobel-category-styles"; style.textContent = `#categoriesGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}.category-card-simple{min-height:120px;padding:24px;border:1px solid #e5eaf0;border-radius:18px;background:#fff;color:#102d50;text-decoration:none;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;box-shadow:0 8px 24px rgba(16,45,80,.05);transition:.25s}.category-card-simple:hover{transform:translateY(-4px);border-color:rgba(88,181,45,.55);box-shadow:0 16px 34px rgba(16,45,80,.11)}.category-card-simple h3{margin:0;color:#102d50;font-size:20px}.category-link-simple{margin-top:22px;color:#102d50;font-size:14px;font-weight:700;display:inline-flex;align-items:center;gap:8px}@media(max-width:980px){#categoriesGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){#categoriesGrid{grid-template-columns:1fr;gap:14px}.category-card-simple{min-height:105px;padding:21px}}`; document.head.appendChild(style);
+  const style = document.createElement("style"); style.id = "mobel-category-styles"; style.textContent = `
+  #categoriesGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+  .category-card-simple{min-height:120px;padding:24px;border:1px solid #e5eaf0;border-radius:18px;background:#fff;color:#102d50;text-decoration:none;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;box-shadow:0 8px 24px rgba(16,45,80,.05);transition:.25s}
+  .category-card-simple:hover{transform:translateY(-4px);border-color:rgba(88,181,45,.55);box-shadow:0 16px 34px rgba(16,45,80,.11)}
+  .category-card-simple h3{margin:0;color:#102d50;font-size:20px}
+  .category-link-simple{margin-top:22px;color:#102d50;font-size:14px;font-weight:700;display:inline-flex;align-items:center;gap:8px}
+  .categories-accordion-toggle{display:none}
+  @media(max-width:980px){#categoriesGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:560px){
+    .categories-accordion-toggle{display:flex;width:calc(100% - 40px);max-width:1120px;margin:0 auto 16px;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border:1px solid #dfe6ed;border-radius:14px;background:#fff;color:#102d50;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 8px 22px rgba(16,45,80,.06)}
+    .categories-accordion-toggle i{transition:transform .28s ease}
+    .categories-accordion-toggle[aria-expanded="true"] i{transform:rotate(180deg)}
+    #categoriesGrid{grid-template-columns:1fr;gap:14px;overflow:hidden;transition:max-height .38s ease,opacity .25s ease;margin-top:0}
+    #categoriesGrid.categories-collapsed{max-height:0!important;opacity:0;pointer-events:none}
+    #categoriesGrid.categories-expanded{opacity:1}
+    .category-card-simple{min-height:105px;padding:21px}
+  }`;
+  document.head.appendChild(style);
 }
-function renderCategories(products) { const holder = document.getElementById("categoriesGrid"); if (!holder) return; injectCategoryStyles(); const categories = [...new Set(products.flatMap(p => p.categorias).filter(Boolean))].sort((a,b) => a.localeCompare(b,"es",{sensitivity:"base"})).slice(0,8); holder.innerHTML = categories.map(category => `<a class="category-card-simple reveal" href="catalogo.html?categoria=${encodeURIComponent(category)}"><h3>${escapeHtml(category)}</h3><span class="category-link-simple">Ver productos <i class="fa-solid fa-arrow-right"></i></span></a>`).join(""); holder.querySelectorAll(".reveal").forEach(observeReveal); }
+function setupCategoriesAccordion(holder) {
+  if (!holder || holder.dataset.accordionReady === "true") return;
+  holder.dataset.accordionReady = "true";
+  holder.id = holder.id || "categoriesGrid";
+
+  const toggle = document.createElement("button");
+  toggle.type = "button";
+  toggle.className = "categories-accordion-toggle";
+  toggle.setAttribute("aria-controls", holder.id);
+  toggle.setAttribute("aria-expanded", "false");
+  toggle.innerHTML = `<span>Mostrar categorías</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i>`;
+  holder.parentNode.insertBefore(toggle, holder);
+
+  const isMobile = () => window.matchMedia("(max-width: 560px)").matches;
+  const setOpen = (open, animate = true) => {
+    if (!isMobile()) {
+      holder.classList.remove("categories-collapsed", "categories-expanded");
+      holder.style.maxHeight = "";
+      toggle.setAttribute("aria-expanded", "true");
+      toggle.querySelector("span").textContent = "Ocultar categorías";
+      return;
+    }
+    if (!animate) holder.style.transition = "none";
+    toggle.setAttribute("aria-expanded", String(open));
+    toggle.querySelector("span").textContent = open ? "Ocultar categorías" : "Mostrar categorías";
+    holder.classList.toggle("categories-collapsed", !open);
+    holder.classList.toggle("categories-expanded", open);
+    holder.style.maxHeight = open ? `${holder.scrollHeight}px` : "0px";
+    if (!animate) requestAnimationFrame(() => { holder.style.transition = ""; });
+  };
+
+  toggle.addEventListener("click", () => setOpen(toggle.getAttribute("aria-expanded") !== "true"));
+  window.addEventListener("resize", () => setOpen(toggle.getAttribute("aria-expanded") === "true", false));
+  setOpen(false, false);
+}
+function renderCategories(products) {
+  const holder = document.getElementById("categoriesGrid");
+  if (!holder) return;
+  injectCategoryStyles();
+  const categories = [...new Set(products.flatMap(p => p.categorias).filter(Boolean))].sort((a,b) => a.localeCompare(b,"es",{sensitivity:"base"})).slice(0,8);
+  holder.innerHTML = categories.map(category => `<a class="category-card-simple reveal" href="catalogo.html?categoria=${encodeURIComponent(category)}"><h3>${escapeHtml(category)}</h3><span class="category-link-simple">Ver productos <i class="fa-solid fa-arrow-right"></i></span></a>`).join("");
+  holder.querySelectorAll(".reveal").forEach(observeReveal);
+  setupCategoriesAccordion(holder);
+}
 function renderSkeletons() { const grid = document.getElementById("productsGrid"); if (!grid) return; grid.innerHTML = Array.from({length:HOME_PRODUCT_LIMIT},()=>`<article class="product-card product-skeleton"><div class="skeleton-image"></div><div class="product-content"><div class="skeleton-line skeleton-small"></div><div class="skeleton-line skeleton-title"></div><div class="skeleton-line"></div><div class="skeleton-line skeleton-button"></div></div></article>`).join(""); }
 function renderFeatured(products) {
   const grid = document.getElementById("productsGrid"), empty = document.getElementById("emptyState"); if (!grid) return;
