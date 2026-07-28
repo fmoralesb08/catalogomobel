@@ -1,12 +1,16 @@
-1. En GitHub, abre cada archivo con el mismo nombre: config.js, app.js, catalogo.js y producto.js.
-2. Pulsa el lápiz, borra todo y pega el contenido del archivo correspondiente de esta carpeta.
-3. Haz Commit changes después de cada archivo.
-4. Espera 1 a 3 minutos a que Cloudflare despliegue.
-5. Abre catalogomobel.com y presiona Ctrl + F5.
+MOBEL – PRODUCTOS EN VARIAS CATEGORÍAS
 
-Google Sheets debe estar publicado en la web y la pestaña Productos debe conservar estos encabezados:
-SKU, Nombre, Precio, Categoría, Presentación, Imagen, Archivo imagen sugerido, Descripción, Destacado, Mostrar.
+Reemplaza en GitHub estos archivos:
+- app.js
+- catalogo.js
+- producto.js
 
-Para mostrar un producto en Inicio, escribe TRUE en Destacado.
-Para ocultar un producto, escribe FALSE en Mostrar.
-La columna Imagen debe contener el nombre exacto del archivo existente en /img/productos/.
+En Google Sheets escribe varias categorías en la misma celda, separadas por una barra vertical |
+
+Ejemplos:
+Desengrasantes | Automotriz
+Cepillos | Cocina | Hogar
+
+No dupliques la fila. El mismo producto aparecerá en todos los filtros indicados.
+
+Después de hacer Commit changes, espera el despliegue de Cloudflare y actualiza con Ctrl + F5.

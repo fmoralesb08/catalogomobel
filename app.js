@@ -24,6 +24,19 @@ function normalizeHeader(value = "") {
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_+|_+$/g, "");
 }
+function parseCategories(value = "") {
+  const categories = String(value)
+    .split("|")
+    .map(category => category.trim())
+    .filter(Boolean);
+
+  return categories.length ? [...new Set(categories)] : ["Otros"];
+}
+
+function formatCategories(categories = []) {
+  return categories.join(" · ");
+}
+
 
 function parseCSV(text) {
   const rows = [];
@@ -135,7 +148,8 @@ function normalizeProduct(product, index) {
   return {
     id: product.sku || product.id || `producto-${index + 1}`,
     nombre: product.nombre || product.producto || "Producto",
-    categoria: product.categoria || "Otros",
+    categorias: parseCategories(product.categoria || product.category || "Otros"),
+    categoria: parseCategories(product.categoria || product.category || "Otros")[0],
     descripcion: product.descripcion || "",
     imagen: normalizeImage(
       product.imagen ||
@@ -310,7 +324,8 @@ function renderCategories(products) {
 
   const categories = [...new Set(
     products
-      .map(product => String(product.categoria || "Otros").trim())
+      .flatMap(product => product.categorias || [product.categoria || "Otros"])
+      .map(category => String(category).trim())
       .filter(Boolean)
   )]
     .sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }))
@@ -387,7 +402,7 @@ function renderFeatured(products) {
 
       <div class="product-content">
         <div class="product-meta">
-          <span>${escapeHtml(product.categoria)}</span>
+          <span>${escapeHtml(formatCategories(product.categorias))}</span>
         </div>
 
         <h3><a href="${detailUrl}">${escapeHtml(product.nombre)}</a></h3>

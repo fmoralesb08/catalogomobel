@@ -17,6 +17,19 @@ function normalizeText(value = "") {
 function normalizeHeader(value = "") {
   return normalizeText(value).replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
 }
+function parseCategories(value = "") {
+  const categories = String(value)
+    .split("|")
+    .map(category => category.trim())
+    .filter(Boolean);
+
+  return categories.length ? [...new Set(categories)] : ["Otros"];
+}
+
+function formatCategories(categories = []) {
+  return categories.join(" · ");
+}
+
 
 function parseCSV(text) {
   const rows = [];
@@ -76,7 +89,8 @@ function normalizeProduct(product, index) {
   return {
     id: product.sku || product.id || `producto-${index + 1}`,
     nombre: product.nombre || product.producto || "Producto",
-    categoria: product.categoria || product.category || "Otros",
+    categorias: parseCategories(product.categoria || product.category || "Otros"),
+    categoria: parseCategories(product.categoria || product.category || "Otros")[0],
     descripcion: product.descripcion || product.description || "",
     imagen: normalizeImage(product.imagen || product.archivo_imagen_sugerido || product.foto || product.image || ""),
     unidad: product.presentacion || product.unidad || product.medida || "",
@@ -126,7 +140,9 @@ function renderSkeletons() {
 function renderFilters() {
   const holder = document.getElementById("catalogFilters");
   if (!holder) return;
-  const categories = ["Todos", ...new Set(allProducts.map(product => product.categoria).filter(Boolean))];
+  const categories = ["Todos", ...new Set(
+    allProducts.flatMap(product => product.categorias || [product.categoria]).filter(Boolean)
+  )];
   categories.sort((a, b) => a === "Todos" ? -1 : b === "Todos" ? 1 : a.localeCompare(b, "es", { sensitivity: "base" }));
   holder.innerHTML = categories.map(category => `<button class="filter-btn ${category === activeCategory ? "active" : ""}" data-category="${escapeHtml(category)}" type="button">${escapeHtml(category)}</button>`).join("");
   holder.querySelectorAll(".filter-btn").forEach(button => button.addEventListener("click", () => {
@@ -146,7 +162,7 @@ function productCard(product) {
     <a class="product-image" href="${detailUrl}">${product.imagen
       ? `<img src="${escapeHtml(product.imagen)}" alt="${escapeHtml(product.nombre)}" loading="lazy" decoding="async" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="image-placeholder" aria-hidden="true" style="display:none">🧴</div>`
       : `<div class="image-placeholder" aria-hidden="true">🧴</div>`}</a>
-    <div class="product-content"><div class="product-meta"><span>${escapeHtml(product.categoria)}</span></div>
+    <div class="product-content"><div class="product-meta"><span>${escapeHtml(formatCategories(product.categorias))}</span></div>
     <h3><a href="${detailUrl}">${escapeHtml(product.nombre)}</a></h3>
     <div class="product-price${product.precio === null ? " product-price-quote" : ""}">${formatPrice(product.precio)}</div>
     <p>${escapeHtml(description)}</p><div class="product-actions"><a class="btn btn-secondary" href="${detailUrl}">Ver producto</a>
@@ -157,8 +173,8 @@ function productCard(product) {
 function applyFilters() {
   const query = normalizeText(document.getElementById("catalogSearch")?.value || "");
   filteredProducts = allProducts.filter(product => {
-    const categoryMatch = activeCategory === "Todos" || product.categoria === activeCategory;
-    const text = normalizeText(`${product.nombre} ${product.categoria} ${product.descripcion} ${product.unidad}`);
+    const categoryMatch = activeCategory === "Todos" || (product.categorias || []).includes(activeCategory);
+    const text = normalizeText(`${product.nombre} ${formatCategories(product.categorias)} ${product.descripcion} ${product.unidad}`);
     return categoryMatch && (!query || text.includes(query));
   });
   renderProducts();
@@ -184,7 +200,9 @@ async function loadCatalog() {
     const params = new URLSearchParams(location.search);
     const requestedCategory = params.get("categoria");
     const requestedSearch = params.get("buscar");
-    if (requestedCategory && allProducts.some(product => product.categoria === requestedCategory)) activeCategory = requestedCategory;
+    if (requestedCategory && allProducts.some(product => (product.categorias || []).includes(requestedCategory))) {
+      activeCategory = requestedCategory;
+    }
     const searchInput = document.getElementById("catalogSearch");
     if (requestedSearch && searchInput) searchInput.value = requestedSearch;
     renderFilters();
