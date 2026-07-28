@@ -234,11 +234,10 @@ function injectCategoryStyles() {
     }
 
     .category-card-simple {
-      position: relative;
-      min-height: 185px;
-      padding: 26px;
+      min-height: 120px;
+      padding: 24px;
       border: 1px solid #e5eaf0;
-      border-radius: 20px;
+      border-radius: 18px;
       background: #ffffff;
       color: #102d50;
       text-decoration: none;
@@ -246,61 +245,25 @@ function injectCategoryStyles() {
       flex-direction: column;
       align-items: flex-start;
       justify-content: space-between;
-      overflow: hidden;
-      box-shadow: 0 8px 24px rgba(16, 45, 80, 0.06);
+      box-shadow: 0 8px 24px rgba(16, 45, 80, 0.05);
       transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
     }
 
-    .category-card-simple::after {
-      content: "";
-      position: absolute;
-      width: 105px;
-      height: 105px;
-      right: -38px;
-      top: -38px;
-      border-radius: 50%;
-      background: rgba(88, 181, 45, 0.10);
-      transition: transform 0.25s ease;
-    }
-
     .category-card-simple:hover {
-      transform: translateY(-5px);
+      transform: translateY(-4px);
       border-color: rgba(88, 181, 45, 0.55);
-      box-shadow: 0 18px 38px rgba(16, 45, 80, 0.12);
-    }
-
-    .category-card-simple:hover::after {
-      transform: scale(1.15);
-    }
-
-    .category-icon-simple {
-      width: 52px;
-      height: 52px;
-      border-radius: 15px;
-      background: #eef7e9;
-      color: #55ad2c;
-      display: grid;
-      place-items: center;
-      font-size: 23px;
-      position: relative;
-      z-index: 1;
+      box-shadow: 0 16px 34px rgba(16, 45, 80, 0.11);
     }
 
     .category-card-simple h3 {
-      margin: 22px 0 7px;
+      margin: 0;
       color: #102d50;
       font-size: 20px;
-      line-height: 1.2;
-    }
-
-    .category-card-simple p {
-      margin: 0;
-      color: #6f7d8d;
-      font-size: 14px;
+      line-height: 1.25;
     }
 
     .category-link-simple {
-      margin-top: 18px;
+      margin-top: 22px;
       color: #102d50;
       font-size: 14px;
       font-weight: 700;
@@ -322,8 +285,16 @@ function injectCategoryStyles() {
       }
 
       .category-card-simple {
-        min-height: 155px;
-        padding: 22px;
+        min-height: 105px;
+        padding: 21px;
+      }
+
+      .category-card-simple h3 {
+        font-size: 18px;
+      }
+
+      .category-link-simple {
+        margin-top: 18px;
       }
     }
   `;
@@ -337,42 +308,28 @@ function renderCategories(products) {
 
   injectCategoryStyles();
 
-  const categoryCounts = products.reduce((counts, product) => {
-    const category = String(product.categoria || "Otros").trim();
-    counts[category] = (counts[category] || 0) + 1;
-    return counts;
-  }, {});
-
-  const categories = Object.keys(categoryCounts)
+  const categories = [...new Set(
+    products
+      .map(product => String(product.categoria || "Otros").trim())
+      .filter(Boolean)
+  )]
     .sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }))
     .slice(0, 8);
 
-  holder.innerHTML = categories.map(category => {
-    const total = categoryCounts[category];
-    const productLabel = total === 1 ? "producto" : "productos";
+  holder.innerHTML = categories.map(category => `
+    <a
+      class="category-card-simple reveal"
+      href="catalogo.html?categoria=${encodeURIComponent(category)}"
+      aria-label="Ver productos de ${escapeHtml(category)}"
+    >
+      <h3>${escapeHtml(category)}</h3>
 
-    return `
-      <a
-        class="category-card-simple reveal"
-        href="catalogo.html?categoria=${encodeURIComponent(category)}"
-        aria-label="Ver productos de ${escapeHtml(category)}"
-      >
-        <div>
-          <div class="category-icon-simple" aria-hidden="true">
-            <i class="fa-solid ${getCategoryIcon(category)}"></i>
-          </div>
-
-          <h3>${escapeHtml(category)}</h3>
-          <p>${total} ${productLabel}</p>
-        </div>
-
-        <span class="category-link-simple">
-          Ver productos
-          <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-        </span>
-      </a>
-    `;
-  }).join("");
+      <span class="category-link-simple">
+        Ver productos
+        <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+      </span>
+    </a>
+  `).join("");
 
   holder.querySelectorAll(".reveal").forEach(observeReveal);
 }
